@@ -1,18 +1,23 @@
-import { useState } from 'react'
-import './App.css'
-import { Header } from './components/Header'
+import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import Login from './components/Auth/Login';
+import Register from './components/Auth/Register';
+import ForgotPassword from './components/Auth/ForgotPassword';
+import Dashboard from './components/Dashboard/Dashboard';
+import StrategyForm from './components/Dashboard/StrategiesForm';
+import Strategies from './components/Dashboard/Strategies';
 
-function App() {
-  const [count, setCount] = useState(0)
-
+export default function App() {
   return (
-    <>
-    <h1 className="text-3xl font-bold underline text-sky-400">
-      Welcome to FSE
-    </h1>
-    <Header />
-    </>
-  )
+    <BrowserRouter>
+      <Routes>
+        <Route path="/" element={<Navigate to="/login" />} />
+        <Route path="/login" element={<Login />} />
+        <Route path="/register" element={<Register />} />
+        <Route path="/forgot-password" element={<ForgotPassword />} />
+        <Route path="/dashboard" element={<Dashboard />} /> 
+        <Route path="/add-strategy" element={<StrategyForm />} />
+        <Route path="/dashboard/strategies" element={<Strategies />} />
+      </Routes>
+    </BrowserRouter>
+  );
 }
-
-export default App
