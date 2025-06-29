@@ -18,6 +18,7 @@ const Logo = () => {
     const handleScroll = () => {
       setVisible(window.scrollY <= 20);
     };
+    //bla bla
 
     window.addEventListener("scroll", handleScroll);
     return () => window.removeEventListener("scroll", handleScroll);
