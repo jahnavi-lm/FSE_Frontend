@@ -5,6 +5,7 @@ import ForgotPassword from './components/Auth/ForgotPassword';
 import Dashboard from './components/Dashboard/Dashboard';
 import StrategyForm from './components/Dashboard/StrategiesForm';
 import Strategies from './components/Dashboard/Strategies';
+import InvestorHome from './components/Investor/Pages/InvestorHome';
 
 export default function App() {
   return (
@@ -17,7 +18,8 @@ export default function App() {
         <Route path="/dashboard" element={<Dashboard />} /> 
         <Route path="/add-strategy" element={<StrategyForm />} />
         <Route path="/dashboard/strategies" element={<Strategies />} />
-      </Routes>
+        <Route path="/Investor/Home" element={
+          <InvestorHome />}/></Routes>
     </BrowserRouter>
   );
 }
