@@ -8,8 +8,9 @@ export default function ForgotPassword() {
   }, []);
 
   return (
-    <div> <Logo />
+    
     <div className="flex items-center justify-center min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100">
+      <div> <Logo />
       <div className="bg-white p-8 rounded-lg shadow-md w-full max-w-md">
         <h2 className="text-2xl font-bold mb-6 text-center">Forgot Password</h2>
         <form className="space-y-4">

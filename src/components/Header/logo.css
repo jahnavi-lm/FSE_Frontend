@@ -1,19 +1,23 @@
 .investor-header {
-  position: fixed;
-  top: 10px;
+  
+  top: 3px;
   left: 0;
   right: 0;
   display: flex;
   justify-content: center;
   align-items: center;
-  z-index: 999;
   transition: opacity 0.3s ease, transform 0.3s ease;
+}
+
+.white-logo {
+  height: 15px !important; /* or whatever smaller size looks good */
 }
 
 .header-logo {
   height: 40px;
   width: auto;
   transition: transform 0.3s ease;
+  
 }
 
 .header-logo:hover {

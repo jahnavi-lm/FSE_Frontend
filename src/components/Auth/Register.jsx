@@ -43,8 +43,9 @@ export default function Register() {
   };
 
   return (
-    <div> <Logo /> 
+   
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center px-4">
+       <div> <Logo /> 
       <div className="bg-white shadow-2xl rounded-2xl px-4 py-3 w-full max-w-md">
         <h2 className="text-3xl font-bold text-center text-indigo-700 mt-0 mb-1">Register</h2>
         <p className="text-center text-gray-600 mb-3">

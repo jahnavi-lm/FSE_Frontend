@@ -1,20 +1,22 @@
 import React, { useState, useEffect } from "react";
+import { useLocation } from "react-router-dom";
 import "./logo.css";
 
 const Logo = () => {
   const [visible, setVisible] = useState(true);
+  const location = useLocation();
+
+  // Routes where white logo is needed
+  const darkRoutes = ["/Investor/Home","/Investor/Account"];
+  const isDark = darkRoutes.includes(location.pathname);
+
+  // Pick logo source and class based on route
+  const logoSrc = isDark ? "/logo-white.svg" : "/logo.png";
+  const logoClass = isDark ? "header-logo white-logo" : "header-logo";
 
   useEffect(() => {
-    let lastScrollY = window.scrollY;
-
     const handleScroll = () => {
-      const currentScrollY = window.scrollY;
-      if (currentScrollY > 20) {
-        setVisible(false);
-      } else {
-        setVisible(true);
-      }
-      lastScrollY = currentScrollY;
+      setVisible(window.scrollY <= 20);
     };
 
     window.addEventListener("scroll", handleScroll);
@@ -23,7 +25,7 @@ const Logo = () => {
 
   return (
     <div className={`investor-header ${visible ? "show" : "hide"}`}>
-      <img src="/logo.png" alt="Fund Simulator Logo" className="header-logo" />
+      <img src={logoSrc} alt="Fund Simulator Logo" className={logoClass} />
     </div>
   );
 };
