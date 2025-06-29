@@ -27,9 +27,10 @@ import "../CSS/NavBar.css";
         {showProfileMenu && (
           <div className="profile-menu">
             <ul>
-              <li>My Account</li>
-              <li>KYC Details</li>
-              <li>Logout</li>
+              <li>👤 My Account</li>
+              <li>💰 Wallet</li>
+              <li>⚙️ Settings</li>
+              <li>🔓 Logout</li>
             </ul>
           </div>
         )}

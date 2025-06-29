@@ -10,11 +10,14 @@ const Sidebar = ({ isOpen, onClose }) => {
           <FaTimes className="close-icon" onClick={onClose} />
         </div>
         <ul>
-          <li>🏠 Dashboard</li>
-          <li>👤 My Account</li>
-          <li>📄 KYC</li>
-          <li>📈 Investments</li>
+          <li>📁 My Portfolio</li>
+          <li>📄 My Orders / Transactions</li>
+          <li>🧾 KYC</li>
+          <li>🛠️ Settings</li>
           <li>🚪 Logout</li>
+          <li>📣 Refer & Earn</li>
+          <li>🆘 Support</li>
+          
         </ul>
       </div>
       {isOpen && <div className="overlay" onClick={onClose}></div>}
