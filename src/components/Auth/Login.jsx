@@ -1,5 +1,7 @@
 import { Link, useNavigate } from 'react-router-dom';
 import { useState, useEffect } from 'react';
+import Logo from '../Header/logo';
+
 
 export default function Login() {
   const navigate = useNavigate();
@@ -7,11 +9,14 @@ export default function Login() {
   const [password, setPassword] = useState('');
 
   useEffect(() => {
+    document.title="Login | Fund Simulator"
     const user = JSON.parse(localStorage.getItem('registeredUser'));
     if (user) {
       setEmail(user.email);
     }
   }, []);
+ 
+
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -31,11 +36,12 @@ export default function Login() {
   };
 
   return (
+    <div><Logo />
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center px-4">
       <div className="bg-white shadow-2xl rounded-2xl p-8 w-full max-w-lg">
         <h2 className="text-4xl font-bold text-center text-indigo-700 mb-2">Sign In</h2>
         <p className="text-center text-gray-600 mb-6">
-          Welcome back! Sign in to continue exploring the{' '}
+          Welcome back! Sign in to continue exploring the{' '}<br></br>
           <span className="text-indigo-600 font-semibold">Fund Strategy Simulator</span>.
         </p>
 
@@ -79,6 +85,7 @@ export default function Login() {
           </Link>
         </p>
       </div>
+    </div>
     </div>
   );
 }
