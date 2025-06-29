@@ -21,7 +21,8 @@ const InvestorHomeBody = () => {
   return (
     <div className="dashboard-container">
       <div className="investment-header">
-        <h2>💼 My Investments</h2>
+        <h2>💼 My Investments  | </h2>
+        &nbsp;
         <span onClick={() => setShowValues(!showValues)} className="eye-icon">
           {showValues ? <FaEyeSlash />: <FaEye /> }
         </span>
