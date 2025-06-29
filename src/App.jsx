@@ -1,25 +1,18 @@
-import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
-import Login from './components/Auth/Login';
-import Register from './components/Auth/Register';
-import ForgotPassword from './components/Auth/ForgotPassword';
-import Dashboard from './components/Dashboard/Dashboard';
-import StrategyForm from './components/Dashboard/StrategiesForm';
-import Strategies from './components/Dashboard/Strategies';
-import InvestorHome from './components/Investor/Pages/InvestorHome';
+import { useState } from 'react'
+import reactLogo from './assets/react.svg'
+import viteLogo from '/vite.svg'
+import './App.css'
 
-export default function App() {
+function App() {
+  const [count, setCount] = useState(0)
+
   return (
-    <BrowserRouter>
-      <Routes>
-        <Route path="/" element={<Navigate to="/login" />} />
-        <Route path="/login" element={<Login />} />
-        <Route path="/register" element={<Register />} />
-        <Route path="/forgot-password" element={<ForgotPassword />} />
-        <Route path="/dashboard" element={<Dashboard />} /> 
-        <Route path="/add-strategy" element={<StrategyForm />} />
-        <Route path="/dashboard/strategies" element={<Strategies />} />
-        <Route path="/Investor/Home" element={
-          <InvestorHome />}/></Routes>
-    </BrowserRouter>
-  );
+    <>
+    <h1 className="text-3xl font-bold underline text-sky-400">
+      Welcome to FSE
+    </h1>
+    </>
+  )
 }
+
+export default App
