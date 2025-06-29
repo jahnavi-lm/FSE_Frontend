@@ -2,6 +2,9 @@ import React, { useState } from "react";
 import { FaBars, FaUserCircle, FaHome } from "react-icons/fa";
 import { MdWavingHand } from "react-icons/md";
 import "../CSS/NavBar.css";
+import Logo from '../../Header/logo.jsx';
+import { Link } from 'react-router-dom';
+
 
 
   const NavBar = ({ firstName = "Investor", onMenuClick }) => {
@@ -11,15 +14,17 @@ import "../CSS/NavBar.css";
     <nav className="navbar">
       <div className="navbar-left">
         <FaBars className="icon" onClick={onMenuClick} /> {/* ⬅️ Trigger Sidebar */}
-        <FaHome className="icon" />
-        <span className="greeting">
-          Hello, {firstName} <MdWavingHand className="wave-emoji" />
-        </span>
+       <Link to ="/Investor/Home"> <FaHome className="icon" /></Link>
+        <Logo />
+        
       </div>
 
       <div className="navbar-center">Welcome Investor</div>
 
       <div className="navbar-right">
+        <span className="greeting">
+          Hello, {firstName} <MdWavingHand className="wave-emoji" />
+        </span>
         <FaUserCircle
           className="icon"
           onClick={() => setShowProfileMenu(!showProfileMenu)}
@@ -27,7 +32,7 @@ import "../CSS/NavBar.css";
         {showProfileMenu && (
           <div className="profile-menu">
             <ul>
-              <li>👤 My Account</li>
+              <li> <Link to="/Investor/Account"> 👤 My Account</Link></li>
               <li>💰 Wallet</li>
               <li>⚙️ Settings</li>
               <li>🔓 Logout</li>
