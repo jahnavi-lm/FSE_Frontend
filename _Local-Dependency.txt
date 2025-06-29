@@ -1,0 +1,10 @@
+Hello from Manav
+Once you Clone the project Please add below
+
+1: Node Modules (as in git we have added in git ignore to reduce storage)
+
+after that
+npm install react react-dom
+npm install react-router react-router-dom
+npm install react-icons
+npm install framer-motion
