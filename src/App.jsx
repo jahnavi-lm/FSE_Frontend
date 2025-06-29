@@ -6,6 +6,7 @@ import Dashboard from './components/Dashboard/Dashboard';
 import StrategyForm from './components/Dashboard/StrategiesForm';
 import Strategies from './components/Dashboard/Strategies';
 import InvestorHome from './components/Investor/Pages/InvestorHome';
+import MyAccount from './components/Investor/Pages/InvestorAccount';
 
 export default function App() {
   return (
@@ -18,8 +19,8 @@ export default function App() {
         <Route path="/dashboard" element={<Dashboard />} /> 
         <Route path="/add-strategy" element={<StrategyForm />} />
         <Route path="/dashboard/strategies" element={<Strategies />} />
-        <Route path="/Investor/Home" element={
-          <InvestorHome />}/></Routes>
+        <Route path="/Investor/Home" element={<InvestorHome />}/>
+        <Route path="/Investor/Account" element = {<MyAccount />}/></Routes>
     </BrowserRouter>
   );
 }
