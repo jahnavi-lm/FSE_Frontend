@@ -1,7 +1,16 @@
-import React from "react";
+
+import React, { useState } from "react";
+import MutualFundPopup from "../Forms/CreateMutualFund";
+import EditMutualFundPopup from "../Forms/EditMutualFUnd";
+import { defaultFundManagers } from "./AllFundManagers";
 
 export default function AllMutualFunds({ onEdit = () => {}, onCreate = () => {} }) {
-  const mockFunds = [
+  const [showPopup, setShowPopup] = useState(false);
+  const [showEditPopup, setShowEditPopup] = useState(false);
+  const [editingFund, setEditingFund] = useState(null);
+  const [assigningFund, setAssigningFund] = useState(null);
+  const [funds, setFunds] = useState([
+     
     { id: "1", name: "Axis Bluechip Fund", type: "Equity", currentNav: 52.45, riskLevel: "High", category: "Large Cap", status: "Active" },
     { id: "2", name: "HDFC Flexi Cap Fund", type: "Equity", currentNav: 91.20, riskLevel: "Moderate", category: "Flexi Cap", status: "Active" },
     { id: "3", name: "Nippon India Small Cap", type: "Equity", currentNav: 142.76, riskLevel: "High", category: "Small Cap", status: "Active" },
@@ -12,7 +21,17 @@ export default function AllMutualFunds({ onEdit = () => {}, onCreate = () => {} 
     { id: "8", name: "Mirae Asset Large Cap Fund", type: "Equity", currentNav: 87.38, riskLevel: "High", category: "Large Cap", status: "Active" },
     { id: "9", name: "Kotak Emerging Equity", type: "Equity", currentNav: 85.12, riskLevel: "High", category: "Mid Cap", status: "Active" },
     { id: "10", name: "Aditya Birla Sun Life Tax Relief 96", type: "ELSS", currentNav: 102.23, riskLevel: "High", category: "Tax Saving", status: "Active" },
-  ];
+
+  ]);
+
+  const assignManager = (manager) => {
+    setFunds((prevFunds) =>
+      prevFunds.map((fund) =>
+        fund.id === assigningFund.id ? { ...fund, assignedManager: manager } : fund
+      )
+    );
+    setAssigningFund(null); // Close modal
+  };
 
   return (
     <div className="bg-white p-6 rounded-xl shadow-md border border-gray-200">
@@ -20,7 +39,7 @@ export default function AllMutualFunds({ onEdit = () => {}, onCreate = () => {} 
         <h2 className="text-2xl font-bold text-gray-800">📊 All Mutual Funds</h2>
         <button
           className="bg-teal-600 hover:bg-teal-700 text-white px-4 py-2 rounded-md text-sm font-medium transition duration-200"
-          onClick={onCreate}
+          onClick={() => setShowPopup(true)}
         >
           + Add Mutual Fund
         </button>
@@ -41,20 +60,30 @@ export default function AllMutualFunds({ onEdit = () => {}, onCreate = () => {} 
           </thead>
 
           <tbody className="bg-white divide-y divide-gray-100">
-            {mockFunds.map((fund) => (
+            {funds.map((fund) => (
               <tr key={fund.id} className="hover:bg-gray-50 transition">
                 <td className="p-3 font-semibold text-gray-800">{fund.name}</td>
                 <td className="p-3 font-medium text-gray-700">{fund.type}</td>
-                <td className="p-3 font-medium text-gray-700">₹{fund.currentNav.toFixed(2)}</td>
+                <td className="p-3 font-medium text-gray-700">₹{fund.currentNav?.toFixed(2)}</td>
                 <td className="p-3 font-medium text-gray-700">{fund.riskLevel}</td>
                 <td className="p-3 font-medium text-gray-700">{fund.category}</td>
                 <td className="p-3 font-medium text-green-600">{fund.status}</td>
-                <td className="p-3 text-right">
+               
+                <td className="p-3 text-right space-x-2">
                   <button
-                    onClick={() => onEdit(fund)}
+                    onClick={() => {
+                      setEditingFund(fund);
+                      setShowEditPopup(true);
+                    }}
                     className="bg-indigo-100 text-indigo-600 hover:bg-indigo-200 px-3 py-1 rounded-full text-xs font-semibold transition"
                   >
                     ✏️ Edit
+                  </button>
+                  <button
+                    onClick={() => setAssigningFund(fund)}
+                    className="bg-yellow-100 text-yellow-700 hover:bg-yellow-200 px-3 py-1 rounded-full text-xs font-semibold transition"
+                  >
+                    👤 Assign FM
                   </button>
                 </td>
               </tr>
@@ -62,6 +91,76 @@ export default function AllMutualFunds({ onEdit = () => {}, onCreate = () => {} 
           </tbody>
         </table>
       </div>
+
+      {/* Add Modal */}
+      {showPopup && (
+        <MutualFundPopup
+          show={showPopup}
+          onClose={() => setShowPopup(false)}
+          onSaveSuccess={() => setShowPopup(false)}
+        />
+      )}
+
+      {/* Edit Modal */}
+      {showEditPopup && editingFund && (
+        <EditMutualFundPopup
+          show={showEditPopup}
+          fundData={editingFund}
+          onClose={() => {
+            setShowEditPopup(false);
+            setEditingFund(null);
+          }}
+          onSaveSuccess={() => {
+            setShowEditPopup(false);
+            setEditingFund(null);
+          }}
+        />
+      )}
+
+      {/* Assign Modal */}
+      {assigningFund && (
+  <div className="fixed inset-0 z-50 bg-black bg-opacity-40 flex items-center justify-center">
+    <div className="bg-white rounded-lg shadow-xl w-[400px] max-w-full p-6">
+      <h3 className="text-lg font-semibold mb-2">
+        Assign Fund Manager to <span className="text-indigo-600">{assigningFund.name}</span>
+      </h3>
+
+      {assigningFund.assignedManager && (
+        <div className="mb-4 text-sm text-gray-700 bg-gray-100 px-3 py-2 rounded-md border border-gray-300">
+          🔒 Already assigned to: <strong>{assigningFund.assignedManager.user.name}</strong>
+        </div>
+      )}
+
+      <ul className="space-y-2 max-h-60 overflow-y-auto">
+        {defaultFundManagers.map((manager) => (
+          <li
+            key={manager.id}
+            className="flex items-center justify-between p-2 border rounded hover:bg-gray-100 transition"
+          >
+            <div>
+              <p className="font-bold">{manager.user.name}</p>
+              <p className="text-sm text-gray-600">{manager.qualification}</p>
+            </div>
+            <button
+              className="bg-blue-500 text-white text-xs px-3 py-1 rounded hover:bg-blue-600"
+              onClick={() => assignManager(manager)}
+            >
+              Assign
+            </button>
+          </li>
+        ))}
+      </ul>
+
+      <button
+        className="mt-4 text-sm text-gray-600 underline hover:text-gray-800"
+        onClick={() => setAssigningFund(null)}
+      >
+        Cancel
+      </button>
+    </div>
+  </div>
+
+      )}
     </div>
   );
 }

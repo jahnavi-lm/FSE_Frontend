@@ -1,16 +1,15 @@
-// Updated AMC Dashboard with Mutual Fund Management + Fund Manager Management
-
 import React, { useState } from "react";
 import { FaMoneyBillWave, FaUserTie } from "react-icons/fa";
 import AllMutualFunds from "../../components/dashboard/AllMutualFunds";
 import AllFundManagers from "../../components/dashboard/AllFundManagers";
 import MutualFundPopup from "../../components/dashboard/MutualFundPopup";
+import EditMutualFundPopup from "../../components/Forms/EditMutualFUnd";
 
 const AmcDashboard = () => {
   const [selectedTab, setSelectedTab] = useState("Mutual Funds");
   const [showCreatePopup, setShowCreatePopup] = useState(false);
 
-  const tabs = [ "Mutual Funds", "Fund Managers","Overview",];
+  const tabs = ["Mutual Funds", "Fund Managers", "Overview"];
 
   const summaryData = {
     totalFunds: 11,
@@ -21,17 +20,8 @@ const AmcDashboard = () => {
     <div className="max-w-7xl mx-auto px-6 py-6 min-h-screen">
       {/* Header */}
       <div className="flex items-center justify-between mb-6">
-        <h1 className="text-2xl font-bold text-gray-800">
-          AMC Admin Dashboard
-        </h1>
-        {selectedTab === "Mutual Funds" && (
-          <button
-            onClick={() => setShowCreatePopup(true)}
-            className="px-4 py-2 bg-teal-600 text-white rounded-lg text-sm font-medium hover:bg-teal-700"
-          >
-            ➕ Create New Fund
-          </button>
-        )}
+        <h1 className="text-2xl font-bold text-gray-800">AMC Admin Dashboard</h1>
+       
       </div>
 
       {/* Summary Cards */}
@@ -74,17 +64,18 @@ const AmcDashboard = () => {
         {/* Tab Content */}
         {selectedTab === "Overview" && (
           <div className="text-gray-700">
-            <h2 className="text-lg font-semibold">
-              Welcome to the AMC Admin Panel
-            </h2>
+            <h2 className="text-lg font-semibold">Welcome to the AMC Admin Panel</h2>
             <p className="text-sm mt-2 text-gray-500">
               Manage all mutual funds and assign fund managers here.
             </p>
           </div>
         )}
 
-        {selectedTab === "Mutual Funds" && <AllMutualFunds />}
+        {selectedTab === "Mutual Funds" && (
+          <AllMutualFunds onCreate={() => setShowCreatePopup(true)} />
+        )}
         {selectedTab === "Fund Managers" && <AllFundManagers />}
+        
       </div>
 
       {/* Create/Edit Fund Modal */}
