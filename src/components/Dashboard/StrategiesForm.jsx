@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { strategyTypes, strategyFieldSchema } from './strategyFields';
+import { strategyTypes, strategyFieldSchema } from '../../../Data/strategyFields';
 
 export default function StrategiesForm({ onSave, onCancel, initialValues }) {
   const [type, setType] = useState('');
