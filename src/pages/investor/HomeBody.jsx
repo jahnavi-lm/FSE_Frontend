@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState , useEffect } from "react";
 import {
   FaEye,
   FaEyeSlash,
@@ -8,9 +8,21 @@ import {
   FaMoneyCheckAlt,
 } from "react-icons/fa";
 
+import InvDashPortfolio from "../../components/Investor/Inv-Dash-portfolio";
+import InvDashAllSchemes from "../../components/Investor/Inv-Dash-AllScheme";
+import InvDashTransactions from "../../components/Investor/Inv-Dash-AllTxn";
+
+
+
+
 const InvestorHomeBody = () => {
   const [showValues, setShowValues] = useState(true);
-  const [selectedTab, setSelectedTab] = useState("Portfolio");
+  const [selectedTab, setSelectedTab] = useState("My Portfolio");
+
+  useEffect(() => {
+    document.title = "Home | Investor";
+    
+  }, []);
 
   const summaryData = {
     invested: 150000,
@@ -19,24 +31,27 @@ const InvestorHomeBody = () => {
     wallet: 20000,
   };
 
-  const tabs = ["Portfolio", "Explore", "Invest", "All Schemes"];
+  const tabs = ["My Portfolio", "All Schemes" , "My Transactions"];
   const displayValue = (val) =>
-    showValues ? `₹${val.toLocaleString()}` : "****";
+    showValues ? "****" : `₹${val.toLocaleString()}`;
 
   return (
+
+    
     <div className="max-w-7xl mx-auto px-6 py-4 min-h-screen">
       {/* Header */}
       <div className="flex items-center justify-between mb-4">
-        <h1 className="text-2xl font-bold text-gray-800">
-          Investor Deshboard
-        </h1>
+      <h1 className="text-2xl font-bold text-gray-800 flex items-center">
+        Investor Dashboard:
         <button
           onClick={() => setShowValues(!showValues)}
-          className="text-teal-600 hover:text-blue-600 text-2xl"
+          className="text-teal-600 hover:text-blue-600 text-2xl align-middle ml-2"
         >
-          {showValues ? <FaEyeSlash /> : <FaEye />}
+          {showValues ?  <FaEyeSlash /> : <FaEye />}
         </button>
-      </div>
+      </h1>
+    </div>
+
 
       {/* Summary Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-4">
@@ -103,93 +118,11 @@ const InvestorHomeBody = () => {
 
         <div className="flex flex-col space-y-6">
           {/* Portfolio Details View */}
-          {selectedTab === "Portfolio" && (
-            <div className="bg-blue-50 border border-blue-200 p-6 rounded-xl shadow-inner">
-              <h3 className="text-xl font-semibold text-blue-700 mb-4">
-                Portfolio Overview
-              </h3>
-              <p className="text-gray-700 mb-6">
-                Here's how your investments are spread across mutual funds and
-                their current performance.
-              </p>
+         {selectedTab === "My Portfolio" && <InvDashPortfolio />}
+         {selectedTab === "All Schemes" && <InvDashAllSchemes />}
+         {selectedTab === "My Transactions" && <InvDashTransactions />}
 
-              <div className="overflow-x-auto">
-                <table className="w-full table-auto text-sm text-left border border-blue-100 rounded-lg shadow-sm">
-                  <thead className="bg-blue-100 text-blue-800">
-                    <tr>
-                      <th className="p-3 font-semibold">Fund Name</th>
-                      <th className="p-3 font-semibold">Invested (₹)</th>
-                      <th className="p-3 font-semibold">Current NAV</th>
-                      <th className="p-3 font-semibold">% Allocation</th>
-                      <th className="p-3 font-semibold text-green-700">
-                        Profit
-                      </th>
-                    </tr>
-                  </thead>
-                  <tbody className="bg-white divide-y divide-blue-100">
-                    {[
-                      {
-                        name: "Axis Bluechip Fund",
-                        invested: 50000,
-                        nav: 61.34,
-                        percent: 33.3,
-                        profit: 7300,
-                      },
-                      {
-                        name: "Parag Parikh Flexi Cap",
-                        invested: 60000,
-                        nav: 92.11,
-                        percent: 40.0,
-                        profit: 10200,
-                      },
-                      {
-                        name: "SBI Equity Hybrid Fund",
-                        invested: 40000,
-                        nav: 58.25,
-                        percent: 26.7,
-                        profit: 4500,
-                      },
-                    ].map((fund, idx) => (
-                      <tr key={idx}>
-                        <td className="p-3 font-medium text-gray-800">
-                          {fund.name}
-                        </td>
-                        <td className="p-3 text-gray-700">
-                          ₹{fund.invested.toLocaleString()}
-                        </td>
-                        <td className="p-3 text-gray-700">₹{fund.nav}</td>
-                        <td className="p-3 text-gray-700">{fund.percent}%</td>
-                        <td className="p-3 text-green-600 font-semibold">
-                          +₹{fund.profit.toLocaleString()}
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            </div>
-          )}
-
-          {/* Pro Tip Section */}
-          <div className="bg-blue-50 border border-blue-200 p-6 rounded-xl shadow-inner">
-            <h3 className="text-xl font-semibold text-blue-700 mb-3">
-              📈 Pro Tip
-            </h3>
-            <p className="text-gray-700">
-              Invest consistently in SIPs and review your asset allocation every
-              6 months.
-            </p>
-          </div>
-          {/* Pro Tip Section */}
-          <div className="bg-blue-50 border border-blue-200 p-6 rounded-xl shadow-inner">
-            <h3 className="text-xl font-semibold text-blue-700 mb-3">
-              📈 Pro Tip
-            </h3>
-            <p className="text-gray-700">
-              Invest consistently in SIPs and review your asset allocation every
-              6 months.
-            </p>
-          </div>
+          
         </div>
       </div>
     </div>
