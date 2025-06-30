@@ -1,26 +1,99 @@
-import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
-import Login from './components/Auth/Login';
-import Register from './components/Auth/Register';
-import ForgotPassword from './components/Auth/ForgotPassword';
-import Dashboard from './components/Dashboard/Dashboard';
-import StrategyForm from './components/Dashboard/StrategiesForm';
-import Strategies from './components/Dashboard/Strategies';
-import InvestorHome from './components/Investor/Pages/InvestorHome';
-import MyAccount from './components/Investor/Pages/InvestorAccount';
+// import {
+//   createBrowserRouter,
+//   RouterProvider,
+//   Navigate,
+// } from "react-router-dom";
+
+// import Login from "./pages/auth/Login";
+// import Register from "./pages/auth/Register";
+// import ForgotPassword from "./pages/auth/ForgotPassword";
+
+// import FundManagerDashboard from "./pages/fundManager/FundManagerDashboard";
+// import InvestorHome from "./pages/investor/InvestorHome";
+// import MyAccount from "./pages/investor/InvestorAccount";
+
+// import PrivateRoute from "./utils/PrivateRoute";
+// import HeaderFooterLayout from "./components/layouts/HeaderFooterLayout";
+
+// const router = createBrowserRouter([
+//   { path: "/", element: <Navigate to="/login" replace /> },
+
+//   // Public Routes
+//   { path: "/login", element: <Login /> },
+//   { path: "/register", element: <Register /> },
+//   { path: "/forgot-password", element: <ForgotPassword /> },
+
+//   // Protected Routes (wrapped with auth + layout)
+//   {
+//     element: <PrivateRoute />,
+//     children: [
+//       {
+//         element: <HeaderFooterLayout />,
+//         children: [
+//           { path: "/dashboard/fund-manager", element: <FundManagerDashboard /> },
+//           { path: "/dashboard/investor", element: <InvestorHome /> },
+//           { path: "/dashboard/investor/my-account", element: <MyAccount /> },
+//         ],
+//       },
+//     ],
+//   },
+// ]);
+
+// export default function App() {
+//   return <RouterProvider router={router} />;
+// }
+
+import {
+  createBrowserRouter,
+  RouterProvider,
+  Navigate,
+} from "react-router-dom";
+
+import Login from "./pages/auth/Login";
+import Register from "./pages/auth/Register";
+import ForgotPassword from "./pages/auth/ForgotPassword";
+
+import FundManagerDashboard from "./pages/fundManager/FundManagerDashboard";
+import InvestorHome from "./pages/investor/InvestorHome";
+import MyAccount from "./pages/investor/InvestorAccount";
+
+import PrivateRoute from "./utils/PrivateRoute";
+import HeaderFooterLayout from "./components/layouts/HeaderFooterLayout";
+import AmcDashboard from "./pages/amc/AmcDashboard";
+
+const router = createBrowserRouter([
+  { path: "/", element: <Navigate to="/login" replace /> },
+
+  // Public Routes
+  { path: "/login", element: <Login /> },
+  { path: "/register", element: <Register /> },
+  { path: "/forgot-password", element: <ForgotPassword /> },
+  {
+    element: <HeaderFooterLayout />,
+    children: [
+      { path: "/dashboard/fund-manager", element: <FundManagerDashboard /> },
+      { path: "/dashboard/investor", element: <InvestorHome /> },
+      { path: "/dashboard/investor/my-account", element: <MyAccount /> },
+      {path: "/dashboard/amc", element: <AmcDashboard />},
+    ],
+  },
+
+  // Protected Routes (wrapped with auth + layout)
+  {
+    element: <PrivateRoute />,
+    children: [
+      // {
+      //   element: <HeaderFooterLayout />,
+      //   children: [
+      //     { path: "/dashboard/fund-manager", element: <FundManagerDashboard /> },
+      //     { path: "/dashboard/investor", element: <InvestorHome /> },
+      //     { path: "/dashboard/investor/my-account", element: <MyAccount /> },
+      //   ],
+      // },
+    ],
+  },
+]);
 
 export default function App() {
-  return (
-    <BrowserRouter>
-      <Routes>
-        <Route path="/" element={<Navigate to="/login" />} />
-        <Route path="/login" element={<Login />} />
-        <Route path="/register" element={<Register />} />
-        <Route path="/forgot-password" element={<ForgotPassword />} />
-        <Route path="/dashboard" element={<Dashboard />} /> 
-        <Route path="/add-strategy" element={<StrategyForm />} />
-        <Route path="/dashboard/strategies" element={<Strategies />} />
-        <Route path="/Investor/Home" element={<InvestorHome />}/>
-        <Route path="/Investor/Account" element = {<MyAccount />}/></Routes>
-    </BrowserRouter>
-  );
+  return <RouterProvider router={router} />;
 }

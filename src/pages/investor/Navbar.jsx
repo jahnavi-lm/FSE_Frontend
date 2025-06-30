@@ -1,8 +1,8 @@
 import React, { useState } from "react";
 import { FaBars, FaUserCircle, FaHome } from "react-icons/fa";
 import { MdWavingHand } from "react-icons/md";
-import "../CSS/NavBar.css";
-import Logo from '../../Header/logo.jsx';
+import "./NavBar.css";
+import Logo from "../../components/header/logo";
 import { Link } from 'react-router-dom';
 
 

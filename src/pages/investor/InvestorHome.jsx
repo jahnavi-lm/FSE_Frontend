@@ -9,10 +9,10 @@ const InvestorHome = () => {
   return (
     <div>
       {/* Pass toggle function to NavBar */}
-      <NavBar firstName="Manish" onMenuClick={() => setSidebarOpen(true)} />
+      {/* <NavBar firstName="Manish" onMenuClick={() => setSidebarOpen(true)} /> */}
 
       {/* Sidebar controlled by state */}
-      <Sidebar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
+      {/* <Sidebar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} /> */}
 
       {/* Other body components */}
       <InvestorHomeBody/>

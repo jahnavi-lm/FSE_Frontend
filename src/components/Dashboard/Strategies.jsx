@@ -1,6 +1,6 @@
 import { useState } from 'react';
-import { initialStrategies } from './Data/strategiesData';
-import StrategiesForm from './StrategiesForm';
+import { initialStrategies } from '../../../Data/strategiesData';
+import StrategiesForm from "./StrategiesForm";
 
 export default function Strategies() {
   const [strategies, setStrategies] = useState(initialStrategies);
@@ -39,42 +39,41 @@ export default function Strategies() {
   };
 
   return (
-    <div className="px-6 py-4 bg-white shadow mt-4 mx-4 rounded-xl">
-      <h2 className="text-2xl font-bold text-indigo-700 mb-4 border-b pb-2">
-        Your Strategies
-      </h2>
+    <div className="max-w-7xl mx-auto px-6 py-6">
 
-      <button
-        onClick={handleAddStrategy}
-        className="mb-4 px-4 py-2 bg-indigo-600 text-white rounded hover:bg-indigo-700 transition"
-      >
-        + Add New Strategy
-      </button>
+      <div className="flex justify-end mb-4">
+        <button
+          onClick={handleAddStrategy}
+          className="px-5 py-2 bg-teal-600 text-white rounded hover:bg-teal-700 transition"
+        >
+          + Add Strategy
+        </button>
+      </div>
 
-      <div className="overflow-x-auto">
-        <table className="min-w-full border">
-          <thead className="bg-indigo-100">
+      <div className=" bg-white overflow-x-auto border rounded-xl shadow-sm">
+        <table className="min-w-full text-sm text-left">
+          <thead className="bg-gray-100 text-gray-700">
             <tr>
-              <th className="border px-4 py-2 text-left">Name</th>
-              <th className="border px-4 py-2 text-left">Type</th>
-              <th className="border px-4 py-2 text-left">Edit</th>
-              <th className="border px-4 py-2 text-left">Delete</th>
+              <th className="px-4 py-3 border-b">Name</th>
+              <th className="px-4 py-3 border-b">Type</th>
+              <th className="px-4 py-3 border-b">Edit</th>
+              <th className="px-4 py-3 border-b">Delete</th>
             </tr>
           </thead>
           <tbody>
             {strategies.map((strategy) => (
-              <tr key={strategy.id} className="hover:bg-indigo-50">
-                <td className="border px-4 py-2">{strategy.name}</td>
-                <td className="border px-4 py-2">{strategy.type}</td>
-                <td className="border px-4 py-2">
+              <tr key={strategy.id} className="hover:bg-gray-50">
+                <td className="px-4 py-3 border-b text-bold">{strategy.name}</td>
+                <td className="px-4 py-3 border-b">{strategy.type}</td>
+                <td className="px-4 py-3 border-b">
                   <button
                     onClick={() => handleEdit(strategy.id)}
-                    className="text-indigo-600 hover:text-indigo-800"
+                    className="text-blue-600 hover:text-blue-800"
                   >
                     Edit
                   </button>
                 </td>
-                <td className="border px-4 py-2">
+                <td className="px-4 py-3 border-b">
                   <button
                     onClick={() => handleDelete(strategy.id)}
                     className="text-red-600 hover:text-red-800"
@@ -86,8 +85,8 @@ export default function Strategies() {
             ))}
             {strategies.length === 0 && (
               <tr>
-                <td colSpan="5" className="text-center py-4 text-gray-500">
-                  No strategies available.
+                <td colSpan="4" className="text-center py-6 text-gray-500">
+                  No strategies found.
                 </td>
               </tr>
             )}

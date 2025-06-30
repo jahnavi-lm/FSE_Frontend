@@ -1,5 +1,5 @@
 import React from "react";
-import "../CSS/Sidebar.css";
+import "./Sidebar.css"; 
 import { FaTimes } from "react-icons/fa";
 
 const Sidebar = ({ isOpen, onClose }) => {
