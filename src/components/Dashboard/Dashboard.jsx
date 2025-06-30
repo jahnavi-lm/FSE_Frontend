@@ -1,15 +1,15 @@
 import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { dashboardData } from './data/dashboardData';
+import { dashboardData } from '../Data/dashboardData';
 
 import NotificationDropdown from './NotificationDropdown';
 import ProfileDropdown from './ProfileDropdown';
 
-import Overview from './Overview';
-import Strategies from './Strategies';
-import Backtest from './Backtest';
-import Portfolio from './Portfolio';
-import Results from './Results';
+import Overview from '../Tabs/Overview';
+import Strategies from '../Tabs/Strategies';
+import Backtest from '../Tabs/Backtest';
+import Portfolio from '../Tabs/Portfolio';
+import Results from '../Tabs/Results';
 
 export default function Dashboard() {
   const [activeTab, setActiveTab] = useState('Overview');

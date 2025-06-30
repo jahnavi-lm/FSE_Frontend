@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { initialStrategies } from './Data/strategiesData';
+import { initialStrategies } from '../Data/strategiesData';
 import StrategiesForm from './StrategiesForm';
 
 export default function Strategies() {

@@ -3,8 +3,8 @@ import Login from './components/Auth/Login';
 import Register from './components/Auth/Register';
 import ForgotPassword from './components/Auth/ForgotPassword';
 import Dashboard from './components/Dashboard/Dashboard';
-import StrategyForm from './components/Dashboard/StrategiesForm';
-import Strategies from './components/Dashboard/Strategies';
+import StrategyForm from './components/Tabs/StrategiesForm';
+import Strategies from './components/Tabs/Strategies';
 
 export default function App() {
   return (
