@@ -49,6 +49,7 @@ import {
   Navigate,
 } from "react-router-dom";
 
+
 import Login from "./pages/auth/Login";
 import Register from "./pages/auth/Register";
 import ForgotPassword from "./pages/auth/ForgotPassword";
@@ -60,6 +61,8 @@ import MyAccount from "./pages/investor/InvestorAccount";
 import PrivateRoute from "./utils/PrivateRoute";
 import HeaderFooterLayout from "./components/layouts/HeaderFooterLayout";
 import AmcDashboard from "./pages/amc/AmcDashboard";
+
+import FundDetails from "./pages/fundDetail/FundDetails";
 
 const router = createBrowserRouter([
   { path: "/", element: <Navigate to="/login" replace /> },
@@ -75,6 +78,8 @@ const router = createBrowserRouter([
       { path: "/dashboard/investor", element: <InvestorHome /> },
       { path: "/dashboard/investor/my-account", element: <MyAccount /> },
       {path: "/dashboard/amc", element: <AmcDashboard />},
+      {path: "/view/fund/:id", element: <FundDetails />} ,
+
     ],
   },
 

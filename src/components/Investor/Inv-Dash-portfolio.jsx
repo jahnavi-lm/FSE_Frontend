@@ -1,8 +1,14 @@
 import React from "react";
+import { Link } from "react-router-dom"; // ✅ Add this import
 
 function InvDashPortfolio() {
+  function handleTakeActionClick(){
+    window.scrollTo(0);
+  };
+  
   const funds = [
     {
+      id: 1,
       name: "Axis Bluechip Fund",
       invested: 50000,
       nav: 61.34,
@@ -10,6 +16,7 @@ function InvDashPortfolio() {
       profit: 7300,
     },
     {
+      id: 2,
       name: "Parag Parikh Flexi Cap",
       invested: 60000,
       nav: 92.11,
@@ -17,6 +24,7 @@ function InvDashPortfolio() {
       profit: 10200,
     },
     {
+      id: 3,
       name: "SBI Equity Hybrid Fund",
       invested: 40000,
       nav: 58.25,
@@ -45,12 +53,12 @@ function InvDashPortfolio() {
                 <th className="p-3 font-semibold">Current NAV</th>
                 <th className="p-3 font-semibold">% Allocation</th>
                 <th className="p-3 font-semibold text-green-700">Profit / Loss</th>
-                <th className="p-3 font-semibold">Buy /Sell</th>
+                <th className="p-3 font-semibold">Buy / Sell</th>
               </tr>
             </thead>
             <tbody className="bg-white divide-y divide-blue-100">
-              {funds.map((fund, idx) => (
-                <tr key={idx}>
+              {funds.map((fund) => (
+                <tr key={fund.id}>
                   <td className="p-3 font-medium text-gray-800">{fund.name}</td>
                   <td className="p-3 text-gray-700">₹{fund.invested.toLocaleString()}</td>
                   <td className="p-3 text-gray-700">₹{fund.nav}</td>
@@ -59,9 +67,13 @@ function InvDashPortfolio() {
                     +₹{fund.profit.toLocaleString()}
                   </td>
                   <td className="p-3">
-                    <button className="bg-indigo-600 hover:bg-indigo-700 text-white px-3 py-1 rounded-md text-sm transition duration-200">
+                    <Link
+                    onClick={handleTakeActionClick}
+                      to={`/view/fund/${fund.id}`}
+                      className="bg-indigo-600 hover:bg-indigo-700 text-white px-3 py-1 rounded-md text-sm transition duration-200"
+                    >
                       Take Action
-                    </button>
+                    </Link>
                   </td>
                 </tr>
               ))}
@@ -80,7 +92,7 @@ function InvDashPortfolio() {
         </p>
       </div>
 
-      {/* Pro Tip Section 2 (optional duplicate or change message) */}
+      {/* Pro Tip Section 2 */}
       <div className="bg-blue-50 border border-blue-200 p-6 rounded-xl shadow-inner">
         <h3 className="text-xl font-semibold text-blue-700 mb-3">
           📉 Market Insight
