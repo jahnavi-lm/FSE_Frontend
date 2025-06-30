@@ -44,7 +44,8 @@ function InvDashPortfolio() {
                 <th className="p-3 font-semibold">Invested (₹)</th>
                 <th className="p-3 font-semibold">Current NAV</th>
                 <th className="p-3 font-semibold">% Allocation</th>
-                <th className="p-3 font-semibold text-green-700">Profit</th>
+                <th className="p-3 font-semibold text-green-700">Profit / Loss</th>
+                <th className="p-3 font-semibold">Buy /Sell</th>
               </tr>
             </thead>
             <tbody className="bg-white divide-y divide-blue-100">
@@ -56,6 +57,11 @@ function InvDashPortfolio() {
                   <td className="p-3 text-gray-700">{fund.percent}%</td>
                   <td className="p-3 text-green-600 font-semibold">
                     +₹{fund.profit.toLocaleString()}
+                  </td>
+                  <td className="p-3">
+                    <button className="bg-indigo-600 hover:bg-indigo-700 text-white px-3 py-1 rounded-md text-sm transition duration-200">
+                      Take Action
+                    </button>
                   </td>
                 </tr>
               ))}

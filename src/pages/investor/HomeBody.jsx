@@ -10,6 +10,7 @@ import {
 
 import InvDashPortfolio from "../../components/Investor/Inv-Dash-portfolio";
 import InvDashAllSchemes from "../../components/Investor/Inv-Dash-AllScheme";
+import InvDashTransactions from "../../components/Investor/Inv-Dash-AllTxn";
 
 
 
@@ -30,7 +31,7 @@ const InvestorHomeBody = () => {
     wallet: 20000,
   };
 
-  const tabs = ["My Portfolio","Invest / Sell ", "All Schemes" , "My Transactions"];
+  const tabs = ["My Portfolio", "All Schemes" , "My Transactions"];
   const displayValue = (val) =>
     showValues ? "****" : `₹${val.toLocaleString()}`;
 
@@ -119,6 +120,7 @@ const InvestorHomeBody = () => {
           {/* Portfolio Details View */}
          {selectedTab === "My Portfolio" && <InvDashPortfolio />}
          {selectedTab === "All Schemes" && <InvDashAllSchemes />}
+         {selectedTab === "My Transactions" && <InvDashTransactions />}
 
           
         </div>
