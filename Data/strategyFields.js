@@ -9,7 +9,7 @@ export const strategyTypes = [
 
 export const strategyFieldSchema = {
   common: [
-    { name: 'strategyName', label: 'Strategy Name', type: 'text' },
+    { name: 'name', label: 'Strategy Name', type: 'text' },
     { name: 'capitalAllocation', label: 'Capital Allocation (%)', type: 'number' },
   ],
 
@@ -20,9 +20,9 @@ export const strategyFieldSchema = {
       name: 'exitStrategy',
       label: 'Exit Strategy',
       type: 'dropdown',
-      options: ['Target Profit', 'Hold(for 3 days)', 'Stop Loss'],
+      options: ['Target Profit', 'Hold', 'Stop Loss'],
       conditionalFields: {
-        'Hold(for 3 days)': [
+        'Hold': [
           { name: 'numberOfDays', label: 'Number of Days', type: 'number' }
         ],
         'Stop Loss': [
