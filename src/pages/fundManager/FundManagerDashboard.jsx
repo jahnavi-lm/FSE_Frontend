@@ -8,7 +8,7 @@ import {
 import Strategies from "../../components/Dashboard/Strategies";
 import Backtest from "../../components/Dashboard/Backtest";
 import Overview from "../../components/Dashboard/OverView";
-import Portfolio from "../../components/Dashboard/Portfolio";
+import Compare from "../../components/Dashboard/Compare";
 import Results from "../../components/Dashboard/Results";
 import { initialResults } from "../../../Data/ResultsData";
 
@@ -27,7 +27,7 @@ const FundManagerDashboard = () => {
   const displayValue = (val) =>
     showValues ? `₹${val.toLocaleString()}` : "****";
 
-  const tabs = ["Overview", "Strategies", "Backtest", "Portfolio", "Results"];
+  const tabs = ["Overview", "Strategies", "Backtest", "Compare", "Results"];
 
   return (
     <div className="max-w-7xl mx-auto px-6 py-6 min-h-screen">
@@ -108,7 +108,7 @@ const FundManagerDashboard = () => {
           {selectedTab === "Backtest" && (
             <Backtest results={results} setResults={setResults} />
           )}
-          {selectedTab === "Portfolio" && <Portfolio />}
+          {selectedTab === "Compare" && <Compare />}
           {selectedTab === "Results" && (
             <Results results={results} />
           )}
