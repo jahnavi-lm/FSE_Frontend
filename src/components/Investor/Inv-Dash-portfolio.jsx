@@ -1,37 +1,33 @@
-import React from "react";
-import { Link } from "react-router-dom"; // ✅ Add this import
+import React, { useEffect, useState } from "react";
+import { Link } from "react-router-dom";
+import { getAllSchemInvestedByInvestor } from "../../api/investorApi"
 
 function InvDashPortfolio() {
-  function handleTakeActionClick(){
-    window.scrollTo(0);
-  };
-  
-  const funds = [
-    {
-      id: 1,
-      name: "Axis Bluechip Fund",
-      invested: 50000,
-      nav: 61.34,
-      percent: 33.3,
-      profit: 7300,
-    },
-    {
-      id: 2,
-      name: "Parag Parikh Flexi Cap",
-      invested: 60000,
-      nav: 92.11,
-      percent: 40.0,
-      profit: 10200,
-    },
-    {
-      id: 3,
-      name: "SBI Equity Hybrid Fund",
-      invested: 40000,
-      nav: 58.25,
-      percent: 26.7,
-      profit: 4500,
-    },
-  ];
+  const [funds, setFunds] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const investorId = localStorage.getItem("investorId"); 
+
+  function handleTakeActionClick() {
+    window.scrollTo(0, 0);
+  }
+
+  useEffect(() => {
+    async function fetchPortfolio() {
+      try {
+        const data = await getAllSchemInvestedByInvestor(investorId);
+        setFunds(data);
+      } catch (error) {
+        console.error("Failed to fetch portfolio:", error);
+        setFunds([]);
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    if (investorId) {
+      fetchPortfolio();
+    }
+  }, [investorId]);
 
   return (
     <div className="flex flex-col space-y-6">
@@ -57,32 +53,42 @@ function InvDashPortfolio() {
               </tr>
             </thead>
             <tbody className="bg-white divide-y divide-blue-100">
-              {funds.map((fund) => (
-                <tr key={fund.id}>
-                  <td className="p-3 font-medium text-gray-800">{fund.name}</td>
-                  <td className="p-3 text-gray-700">₹{fund.invested.toLocaleString()}</td>
-                  <td className="p-3 text-gray-700">₹{fund.nav}</td>
-                  <td className="p-3 text-gray-700">{fund.percent}%</td>
-                  <td className="p-3 text-green-600 font-semibold">
-                    +₹{fund.profit.toLocaleString()}
-                  </td>
-                  <td className="p-3">
-                    <Link
-                    onClick={handleTakeActionClick}
-                      to={`/view/fund/${fund.id}`}
-                      className="bg-indigo-600 hover:bg-indigo-700 text-white px-3 py-1 rounded-md text-sm transition duration-200"
-                    >
-                      Take Action
-                    </Link>
-                  </td>
+              {loading ? (
+                <tr>
+                  <td colSpan="6" className="p-4 text-center text-gray-500">Loading portfolio...</td>
                 </tr>
-              ))}
+              ) : funds.length === 0 ? (
+                <tr>
+                  <td colSpan="6" className="p-4 text-center text-gray-500">No investments found.</td>
+                </tr>
+              ) : (
+                funds.map((fund) => (
+                  <tr key={fund.id}>
+                    <td className="p-3 font-medium text-gray-800">{fund.name}</td>
+                    <td className="p-3 text-gray-700">₹{fund.invested.toLocaleString()}</td>
+                    <td className="p-3 text-gray-700">₹{fund.nav}</td>
+                    <td className="p-3 text-gray-700">{fund.percent}%</td>
+                    <td className={`p-3 font-semibold ${fund.profit >= 0 ? "text-green-600" : "text-red-600"}`}>
+                      ₹{fund.profit.toLocaleString()}
+                    </td>
+                    <td className="p-3">
+                      <Link
+                        onClick={handleTakeActionClick}
+                        to={`/view/fund/${fund.id}`}
+                        className="bg-indigo-600 hover:bg-indigo-700 text-white px-3 py-1 rounded-md text-sm transition duration-200"
+                      >
+                        Take Action
+                      </Link>
+                    </td>
+                  </tr>
+                ))
+              )}
             </tbody>
           </table>
         </div>
       </div>
 
-      {/* Pro Tip Section 1 */}
+      {/* Pro Tip Section */}
       <div className="bg-blue-50 border border-blue-200 p-6 rounded-xl shadow-inner">
         <h3 className="text-xl font-semibold text-blue-700 mb-3">
           📈 Pro Tip
@@ -92,7 +98,7 @@ function InvDashPortfolio() {
         </p>
       </div>
 
-      {/* Pro Tip Section 2 */}
+      {/* Market Insight */}
       <div className="bg-blue-50 border border-blue-200 p-6 rounded-xl shadow-inner">
         <h3 className="text-xl font-semibold text-blue-700 mb-3">
           📉 Market Insight

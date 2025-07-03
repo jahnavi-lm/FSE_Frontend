@@ -63,6 +63,8 @@ import HeaderFooterLayout from "./components/layouts/HeaderFooterLayout";
 import AmcDashboard from "./pages/amc/AmcDashboard";
 
 import FundDetails from "./pages/fundDetail/FundDetails";
+import CompleteProfile from "./pages/investor/InvestorProfile";
+import UserRedirect from "./pages/auth/UserRedirect";
 
 const router = createBrowserRouter([
   { path: "/", element: <Navigate to="/login" replace /> },
@@ -71,6 +73,9 @@ const router = createBrowserRouter([
   { path: "/login", element: <Login /> },
   { path: "/register", element: <Register /> },
   { path: "/forgot-password", element: <ForgotPassword /> },
+  
+  {path: "/user/redirect", element: <UserRedirect />},
+
   {
     element: <HeaderFooterLayout />,
     children: [
@@ -79,6 +84,7 @@ const router = createBrowserRouter([
       { path: "/dashboard/investor/my-account", element: <MyAccount /> },
       {path: "/dashboard/amc", element: <AmcDashboard />},
       {path: "/view/fund/:id", element: <FundDetails />} ,
+      {path: "/Investor/Register", element: < CompleteProfile/>} ,
 
     ],
   },
