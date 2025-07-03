@@ -1,4 +1,4 @@
-import React, { useState , useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import {
   FaEye,
   FaEyeSlash,
@@ -12,46 +12,53 @@ import InvDashPortfolio from "../../components/Investor/Inv-Dash-portfolio";
 import InvDashAllSchemes from "../../components/Investor/Inv-Dash-AllScheme";
 import InvDashTransactions from "../../components/Investor/Inv-Dash-AllTxn";
 
-
-
-
 const InvestorHomeBody = () => {
   const [showValues, setShowValues] = useState(true);
   const [selectedTab, setSelectedTab] = useState("My Portfolio");
 
+  const [summaryData, setSummaryData] = useState({
+    invested: 0,
+    current: 0,
+    returns: 0,
+    wallet: 0,
+  });
+
   useEffect(() => {
     document.title = "Home | Investor";
-    
+
+    // Fetch summary data from backend
+    fetch("http://localhost:8080/api/investor/summary")
+      .then((res) => {
+        if (!res.ok) throw new Error("Failed to fetch summary data");
+        return res.json();
+      })
+      .then((data) => {
+        setSummaryData(data);
+      })
+      .catch((err) => {
+        console.error("Error fetching investor summary:", err);
+      });
   }, []);
 
-  const summaryData = {
-    invested: 150000,
-    current: 180000,
-    returns: 30000,
-    wallet: 20000,
-  };
+  const tabs = ["My Portfolio", "All Schemes", "My Transactions"];
 
-  const tabs = ["My Portfolio", "All Schemes" , "My Transactions"];
   const displayValue = (val) =>
     showValues ? "****" : `₹${val.toLocaleString()}`;
 
   return (
-
-    
     <div className="max-w-7xl mx-auto px-6 py-4 min-h-screen">
       {/* Header */}
       <div className="flex items-center justify-between mb-4">
-      <h1 className="text-2xl font-bold text-gray-800 flex items-center">
-        Investor Dashboard:
-        <button
-          onClick={() => setShowValues(!showValues)}
-          className="text-teal-600 hover:text-blue-600 text-2xl align-middle ml-2"
-        >
-          {showValues ?  <FaEyeSlash /> : <FaEye />}
-        </button>
-      </h1>
-    </div>
-
+        <h1 className="text-2xl font-bold text-gray-800 flex items-center">
+          Investor Dashboard:
+          <button
+            onClick={() => setShowValues(!showValues)}
+            className="text-teal-600 hover:text-blue-600 text-2xl align-middle ml-2"
+          >
+            {showValues ? <FaEyeSlash /> : <FaEye />}
+          </button>
+        </h1>
+      </div>
 
       {/* Summary Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-4">
@@ -116,13 +123,11 @@ const InvestorHomeBody = () => {
           </div>
         </div>
 
+        {/* Tab Content */}
         <div className="flex flex-col space-y-6">
-          {/* Portfolio Details View */}
-         {selectedTab === "My Portfolio" && <InvDashPortfolio />}
-         {selectedTab === "All Schemes" && <InvDashAllSchemes />}
-         {selectedTab === "My Transactions" && <InvDashTransactions />}
-
-          
+          {selectedTab === "My Portfolio" && <InvDashPortfolio />}
+          {selectedTab === "All Schemes" && <InvDashAllSchemes />}
+          {selectedTab === "My Transactions" && <InvDashTransactions />}
         </div>
       </div>
     </div>
