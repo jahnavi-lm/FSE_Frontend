@@ -6,9 +6,10 @@ import axiosClient from "../../api/api";
 export default function UserRedirect() {
   const navigate = useNavigate();
 
-  useEffect(() => {
+ useEffect(() => {
     const redirectUser = async () => {
       const user = JSON.parse(localStorage.getItem("user"));
+
       if (!user || !user.role) {
         navigate("/login");
         return;
@@ -17,13 +18,15 @@ export default function UserRedirect() {
       switch (user.role) {
         case "INVESTOR":
           try {
-            const res = await axiosClient.get(`/api/investors/${user.id}`);
-            if (res?.data?.id) {
+            const res = await axiosClient.get(`/api/investors/exists/${user.id}`);
+            console.log("Investor exists:", res?.data); // For debugging
+            if (res?.data === true) {
               navigate("/dashboard/investor");
             } else {
               navigate("/Investor/Register");
             }
           } catch (err) {
+            console.error("Investor existence check failed:", err);
             navigate("/Investor/Register");
           }
           break;

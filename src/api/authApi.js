@@ -22,7 +22,7 @@ export const createInvestorProfile = async (investorData) => {
 
 // ✅ Get Investor by User ID (to check if already exists)
 export const fetchInvestorById = async (userId) => {
-  const response = await axiosClient.get(`/api/investors/${userId}`);
+  const response = await axiosClient.get(`/api/investors/exists/${userId}`);
   return response.data;
 };
 

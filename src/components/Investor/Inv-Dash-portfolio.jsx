@@ -1,11 +1,13 @@
 import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import { getAllSchemInvestedByInvestor } from "../../api/investorApi"
+import { getAllSchemInvestedByInvestor } from "../../api/investorApi";
 
 function InvDashPortfolio() {
   const [funds, setFunds] = useState([]);
   const [loading, setLoading] = useState(true);
-  const investorId = localStorage.getItem("investorId"); 
+
+  const user = JSON.parse(localStorage.getItem("user"));
+  const investorId = user?.id;
 
   function handleTakeActionClick() {
     window.scrollTo(0, 0);
@@ -46,6 +48,7 @@ function InvDashPortfolio() {
               <tr>
                 <th className="p-3 font-semibold">Fund Name</th>
                 <th className="p-3 font-semibold">Invested (₹)</th>
+                <th className="p-3 font-semibold">Avg NAV</th>
                 <th className="p-3 font-semibold">Current NAV</th>
                 <th className="p-3 font-semibold">% Allocation</th>
                 <th className="p-3 font-semibold text-green-700">Profit / Loss</th>
@@ -55,26 +58,27 @@ function InvDashPortfolio() {
             <tbody className="bg-white divide-y divide-blue-100">
               {loading ? (
                 <tr>
-                  <td colSpan="6" className="p-4 text-center text-gray-500">Loading portfolio...</td>
+                  <td colSpan="7" className="p-4 text-center text-gray-500">Loading portfolio...</td>
                 </tr>
               ) : funds.length === 0 ? (
                 <tr>
-                  <td colSpan="6" className="p-4 text-center text-gray-500">No investments found.</td>
+                  <td colSpan="7" className="p-4 text-center text-gray-500">No investments found.</td>
                 </tr>
               ) : (
                 funds.map((fund) => (
-                  <tr key={fund.id}>
-                    <td className="p-3 font-medium text-gray-800">{fund.name}</td>
-                    <td className="p-3 text-gray-700">₹{fund.invested.toLocaleString()}</td>
-                    <td className="p-3 text-gray-700">₹{fund.nav}</td>
-                    <td className="p-3 text-gray-700">{fund.percent}%</td>
-                    <td className={`p-3 font-semibold ${fund.profit >= 0 ? "text-green-600" : "text-red-600"}`}>
-                      ₹{fund.profit.toLocaleString()}
+                  <tr key={fund.fundSchemeId}>
+                    <td className="p-3 font-medium text-gray-800">{fund.fundName}</td>
+                    <td className="p-3 text-gray-700">₹{fund.investedAmount.toLocaleString()}</td>
+                    <td className="p-3 text-gray-700">₹{fund.avgNav?.toFixed(2)}</td>
+                    <td className="p-3 text-gray-700">₹{fund.currentNav?.toFixed(2)}</td>
+                    <td className="p-3 text-gray-700">{fund.allocationPercent?.toFixed(2)}%</td>
+                    <td className={`p-3 font-semibold ${fund.profitOrLoss >= 0 ? "text-green-600" : "text-red-600"}`}>
+                      ₹{fund.profitOrLoss?.toLocaleString()}
                     </td>
                     <td className="p-3">
                       <Link
                         onClick={handleTakeActionClick}
-                        to={`/view/fund/${fund.id}`}
+                        to={`/view/fund/${fund.fundSchemeId}`}
                         className="bg-indigo-600 hover:bg-indigo-700 text-white px-3 py-1 rounded-md text-sm transition duration-200"
                       >
                         Take Action
@@ -90,9 +94,7 @@ function InvDashPortfolio() {
 
       {/* Pro Tip Section */}
       <div className="bg-blue-50 border border-blue-200 p-6 rounded-xl shadow-inner">
-        <h3 className="text-xl font-semibold text-blue-700 mb-3">
-          📈 Pro Tip
-        </h3>
+        <h3 className="text-xl font-semibold text-blue-700 mb-3">📈 Pro Tip</h3>
         <p className="text-gray-700">
           Invest consistently in SIPs and review your asset allocation every 6 months.
         </p>
@@ -100,9 +102,7 @@ function InvDashPortfolio() {
 
       {/* Market Insight */}
       <div className="bg-blue-50 border border-blue-200 p-6 rounded-xl shadow-inner">
-        <h3 className="text-xl font-semibold text-blue-700 mb-3">
-          📉 Market Insight
-        </h3>
+        <h3 className="text-xl font-semibold text-blue-700 mb-3">📉 Market Insight</h3>
         <p className="text-gray-700">
           Don’t react to short-term market volatility — focus on your long-term goals.
         </p>
