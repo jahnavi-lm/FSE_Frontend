@@ -1,7 +1,8 @@
 import { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import Logo from "../../components/header/logo";
+import { registerUser } from "../../api/authApi";
 import BackgroundImage from "../../../public/bgImage.png";
+import { FiLoader } from "react-icons/fi";
 
 export default function Register() {
   const navigate = useNavigate();
@@ -12,12 +13,20 @@ export default function Register() {
   const [retypePassword, setRetypePassword] = useState("");
   const [role, setRole] = useState("Investor");
   const [agree, setAgree] = useState(false);
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     document.title = "Register | Fund Simulator";
   }, []);
 
-  const handleSubmit = (e) => {
+  // Role mapping to match backend ENUMs
+  const roleMap = {
+    "Investor": "INVESTOR",
+    "Fund Manager": "MANAGER",
+    "AMC": "AMC",
+  };
+
+  const handleSubmit = async (e) => {
     e.preventDefault();
 
     if (password !== retypePassword) {
@@ -30,10 +39,27 @@ export default function Register() {
       return;
     }
 
-    const user = { fullName, email, password, role };
-    localStorage.setItem("registeredUser", JSON.stringify(user));
-    alert("Registration successful! Please sign in.");
-    navigate("/login");
+    const userPayload = {
+      name: fullName,
+      email,
+      password,
+      userRole: roleMap[role], // 🟢 correctly mapped role
+    };
+
+    try {
+      setLoading(true);
+      await registerUser(userPayload);
+      alert("Registration successful! Please sign in.");
+      navigate("/login");
+    } catch (error) {
+      console.error("Registration error:", error);
+      alert(
+        error?.response?.data?.message ||
+          "Something went wrong. Please try again."
+      );
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -43,9 +69,8 @@ export default function Register() {
         backgroundImage: `url(${BackgroundImage})`,
       }}
     >
-            {/* Dark overlay */}
       <div className="absolute inset-0 bg-black opacity-50 z-0" />
-      <div className="w-full max-w-sm">
+      <div className="w-full max-w-sm z-10">
         <div className="bg-white/80 backdrop-blur-xl shadow-lg rounded-2xl p-6 border border-[#fa6b11]">
           <h2 className="text-2xl font-bold text-center text-[#fa6b11] mb-1">
             Create Account
@@ -77,7 +102,6 @@ export default function Register() {
             ))}
           </div>
 
-          {/* Form */}
           <form className="space-y-3 text-sm" onSubmit={handleSubmit}>
             <input
               type="text"
@@ -133,9 +157,19 @@ export default function Register() {
 
             <button
               type="submit"
-              className="w-full bg-[#fa6b11] hover:bg-orange-300 text-white py-2 rounded-lg font-semibold text-sm transition"
+              disabled={loading}
+              className={`w-full ${
+                loading ? "bg-orange-300" : "bg-[#fa6b11] hover:bg-orange-300"
+              } text-white py-2 rounded-lg font-semibold text-sm transition flex justify-center items-center`}
             >
-              Register
+              {loading ? (
+                <>
+                  <FiLoader className="animate-spin mr-2" />
+                  Registering...
+                </>
+              ) : (
+                "Register"
+              )}
             </button>
           </form>
 
