@@ -1,38 +1,45 @@
-import { useState } from 'react';
-import { initialStrategies } from '../../../Data/strategiesData';
+import { useState, useEffect } from 'react';
 import StrategiesForm from "./StrategiesForm";
+import {
+  getAllStrategies,
+  createOrUpdateStrategy,
+  deleteStrategy
+} from '../../api/strategiesApi';
 
 export default function Strategies() {
-  const [strategies, setStrategies] = useState(
-    initialStrategies.map((s) => ({
-      ...s,
-      status: s.status || 'not started',
-      result: s.result || null
-    }))
-  );
+  const [strategies, setStrategies] = useState([]);
   const [showForm, setShowForm] = useState(false);
   const [editingStrategy, setEditingStrategy] = useState(null);
   const [showResult, setShowResult] = useState(null);
 
+  useEffect(() => {
+    loadStrategies();
+  }, []);
+
+  const loadStrategies = async () => {
+    try {
+      const response = await getAllStrategies();
+      setStrategies(response.data);
+    } catch (error) {
+      console.error('Error loading strategies:', error);
+    }
+  };
+  
+  const handleSaveStrategy = async (strategy) => {
+    try {
+      await createOrUpdateStrategy(strategy);
+      await loadStrategies(); // refresh from backend
+    } catch (error) {
+      console.error('Error saving strategy:', error);
+    } finally {
+      setShowForm(false);
+      setEditingStrategy(null);
+    }
+  };
+
   const handleAddStrategy = () => {
     setEditingStrategy(null);
     setShowForm(true);
-  };
-
-  const handleSaveStrategy = (strategy) => {
-    setStrategies((prev) => {
-      const exists = prev.some((s) => s.id === strategy.id);
-      if (exists) {
-        return prev.map((s) =>
-          s.id === strategy.id
-            ? { ...strategy, status: s.status, result: s.result }
-            : s
-        );
-      }
-      return [...prev, { ...strategy, status: 'not started', result: null }];
-    });
-    setShowForm(false);
-    setEditingStrategy(null);
   };
 
   const handleEdit = (id) => {
@@ -43,9 +50,14 @@ export default function Strategies() {
     }
   };
 
-  const handleDelete = (id) => {
+  const handleDelete = async (id) => {
     if (confirm('Are you sure you want to delete this strategy?')) {
-      setStrategies(strategies.filter((s) => s.id !== id));
+      try {
+        await deleteStrategy(id);
+        await loadStrategies();
+      } catch (error) {
+        console.error('Error deleting strategy:', error);
+      }
     }
   };
 
