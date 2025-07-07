@@ -1,21 +1,45 @@
 import { useState, useEffect } from 'react';
-import { useLocation, Link } from 'react-router-dom';
-import { FiBell, FiLogOut, FiUser } from 'react-icons/fi';
+import { useLocation, Link, useNavigate } from 'react-router-dom';
+import { FiBell, FiLogOut, FiUser, FiHome } from 'react-icons/fi';
 
 export default function Header() {
   const [visible, setVisible] = useState(true);
   const location = useLocation();
+  const navigate = useNavigate();
 
   const darkRoutes = ['/Investor/Home', '/Investor/Account'];
   const isDark = darkRoutes.includes(location.pathname);
-
   const logoSrc = isDark ? '/logo-white.svg' : '/logo.png';
+
+  const user = JSON.parse(localStorage.getItem('user'));
+  const hideNav = location.pathname.toLowerCase().endsWith("register");
 
   useEffect(() => {
     const handleScroll = () => setVisible(window.scrollY <= 20);
     window.addEventListener('scroll', handleScroll);
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
+
+  const handleHomeRedirect = () => {
+    if (!user?.role) {
+      navigate('/login');
+      return;
+    }
+
+    switch (user.role) {
+      case 'INVESTOR':
+        navigate('/dashboard/investor');
+        break;
+      case 'MANAGER':
+        navigate('/dashboard/fund-manager');
+        break;
+      case 'AMC':
+        navigate('/dashboard/amc');
+        break;
+      default:
+        navigate('/unauthorized');
+    }
+  };
 
   return (
     <header
@@ -24,8 +48,8 @@ export default function Header() {
       } ${isDark ? 'bg-transparent' : 'bg-white/70 backdrop-blur-md shadow-md'}`}
     >
       <div className="max-w-7xl mx-auto px-6 py-3 flex items-center justify-between">
-        {/* Logo */}
-        <Link to="/dashboard/fund-manager" className="hover:text-[#fa6b11] transition-colors">
+        {/* Logo & Home */}
+        <div className="flex items-center gap-4">
           <img
             src={logoSrc}
             alt="MutualFundPro Logo"
@@ -33,27 +57,40 @@ export default function Header() {
               isDark ? 'invert' : ''
             }`}
           />
-        </Link>
+          {!hideNav && (
+            <button onClick={handleHomeRedirect}>
+              <IconButton icon={<FiHome />} tooltip="Home" />
+            </button>
+          )}
+        </div>
 
         {/* Navigation and Action Icons */}
         <div className="flex items-center gap-6">
-          {/* Navigation */}
-          <nav className="hidden md:flex gap-6 text-sm font-medium text-gray-700">
-            <Link to="/dashboard/investor" className="hover:text-[#fa6b11] transition-colors">
-              Investor
-            </Link>
-            <Link to="/dashboard/fund-manager" className="hover:text-[#fa6b11] transition-colors">
-              Fund Manager
-            </Link>
-            <Link to="/dashboard/amc" className="hover:text-[#fa6b11] transition-colors">
-              AMC
-            </Link>
-          </nav>
+          {/* Navigation Links - only if not on /register */}
+          {!hideNav && (
+            <nav className="hidden md:flex gap-6 text-sm font-medium text-gray-700">
+              {user?.role === 'INVESTOR' && (
+                <Link to="/dashboard/investor" className="hover:text-[#fa6b11] transition-colors">
+                  Investor Dashboard
+                </Link>
+              )}
+              {user?.role === 'MANAGER' && (
+                <Link to="/dashboard/fund-manager" className="hover:text-[#fa6b11] transition-colors">
+                  Fund Manager Dashboard
+                </Link>
+              )}
+              {user?.role === 'AMC' && (
+                <Link to="/dashboard/amc" className="hover:text-[#fa6b11] transition-colors">
+                  AMC Dashboard
+                </Link>
+              )}
+            </nav>
+          )}
 
-          {/* Icons */}
+          {/* Icons - always show, but conditionally render based on route */}
           <div className="flex items-center gap-3">
-            <IconButton icon={<FiBell />} tooltip="Notifications" />
-            <IconButton icon={<FiUser />} tooltip="Profile" to="/dashboard/investor/my-account" />
+             <IconButton icon={<FiBell />} tooltip="Notifications" />
+            {!hideNav &&<IconButton icon={<FiUser />} tooltip="Profile" to="/dashboard/investor/my-account" />}
             <IconButton icon={<FiLogOut />} tooltip="Logout" to="/login" color="text-red-600" />
           </div>
         </div>
@@ -66,8 +103,7 @@ export default function Header() {
 function IconButton({ icon, tooltip, to, color = 'text-gray-700' }) {
   const base =
     'group relative flex items-center justify-center w-10 h-10 rounded-full bg-gray-100 hover:bg-[#fa6b11]/20 transition-all duration-300 ease-in-out';
-  const iconStyle =
-    `text-lg ${color} group-hover:text-[#fa6b11] transition-transform duration-200 transform group-hover:scale-110`;
+  const iconStyle = `text-lg ${color} group-hover:text-[#fa6b11] transition-transform duration-200 transform group-hover:scale-110`;
 
   const ButtonContent = (
     <div className={base}>

@@ -64,6 +64,8 @@ import AmcDashboard from "./pages/amc/AmcDashboard";
 
 import FundDetails from "./pages/fundDetail/FundDetails";
 import CompleteProfile from "./pages/investor/InvestorProfile";
+import CompleteAmcProfile from "./pages/register/AmcProfile";
+import CompleteManagerProfile from "./pages/register/ManagerProfile";
 import UserRedirect from "./pages/auth/UserRedirect";
 
 const router = createBrowserRouter([
@@ -85,6 +87,8 @@ const router = createBrowserRouter([
       {path: "/dashboard/amc", element: <AmcDashboard />},
       {path: "/view/fund/:id", element: <FundDetails />} ,
       {path: "/Investor/Register", element: < CompleteProfile/>} ,
+      {path: "/amc/Register", element: < CompleteAmcProfile/>} ,
+      {path: "/manager/register", element: < CompleteManagerProfile/>} ,
 
     ],
   },

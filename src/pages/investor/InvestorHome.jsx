@@ -8,6 +8,7 @@ const InvestorHome = () => {
 
   return (
     <div>
+      
       {/* Pass toggle function to NavBar */}
       {/* <NavBar firstName="Manish" onMenuClick={() => setSidebarOpen(true)} /> */}
 

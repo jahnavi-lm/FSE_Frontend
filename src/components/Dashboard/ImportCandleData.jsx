@@ -4,25 +4,32 @@ import {
   importCandleData,
 } from "../../api/candleImportApi";
 import toast from "react-hot-toast";
+import { FiPlus, FiX } from "react-icons/fi";
 
 const indices = ["NIFTY 50", "NIFTY NEXT 50", "NIFTY 100"];
 
 const ImportCandleData = () => {
-  const [selectedIndex, setSelectedIndex] = useState("");
+  const [selectedIndices, setSelectedIndices] = useState([]);
+  const [dropdownOpen, setDropdownOpen] = useState(false);
   const [companies, setCompanies] = useState([]);
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    const fetchCompanies = async () => {
-      if (!selectedIndex) {
+    const fetchAllCompanies = async () => {
+      if (selectedIndices.length === 0) {
         setCompanies([]);
         return;
       }
 
       setLoading(true);
       try {
-        const data = await getCompaniesByIndex(selectedIndex);
-        setCompanies(data);
+        let allCompanies = [];
+        for (const index of selectedIndices) {
+          const data = await getCompaniesByIndex(index);
+          allCompanies = [...allCompanies, ...data];
+        }
+        const uniqueCompanies = [...new Set(allCompanies)];
+        setCompanies(uniqueCompanies);
       } catch (err) {
         console.error("Error fetching companies:", err);
         setCompanies([]);
@@ -31,36 +38,40 @@ const ImportCandleData = () => {
       }
     };
 
-    fetchCompanies();
-  }, [selectedIndex]);
+    fetchAllCompanies();
+  }, [selectedIndices]);
 
-  const handleSubmit = async () => {
-    if (!selectedIndex) {
-      toast.error("Please select an index");
+  const handleImport = async () => {
+    if (selectedIndices.length === 0) {
+      toast.error("Please select at least one index");
       return;
     }
 
-    const importPromise = importCandleData(selectedIndex);
+    for (const index of selectedIndices) {
+      const importPromise = importCandleData(index);
+      toast.promise(
+        importPromise,
+        {
+          loading: `Importing ${index}`,
+          success: (message) => message,
+          error: "Import failed. Please try again.",
+        },
+        {
+          loading: { duration: Infinity },
+          success: { duration: 5000 },
+          error: { duration: 5000 },
+        }
+      );
+    }
+  };
 
-    toast.promise(
-      importPromise,
-      {
-        loading: `Importing ${selectedIndex}`,
-        success: (message) => message,
-        error: "Import failed. Please try again.",
-      },
-      {
-        loading: {
-          duration: Infinity, // 🔁 keep until resolved
-        },
-        success: {
-          duration: 5000, // ✅ hide after 5s
-        },
-        error: {
-          duration: 5000, // ❌ hide after 5s
-        },
-      }
-    );
+  const handleAddIndex = (index) => {
+    setSelectedIndices((prev) => [...prev, index]);
+    setDropdownOpen(false);
+  };
+
+  const handleRemoveIndex = (index) => {
+    setSelectedIndices((prev) => prev.filter((i) => i !== index));
   };
 
   return (
@@ -68,21 +79,56 @@ const ImportCandleData = () => {
       <div className="max-w-7xl mx-auto px-6 py-6">
         <h2 className="text-xl font-bold mb-4">Import NIFTY Index Data</h2>
 
-        <select
-          className="w-full p-3 border rounded-lg mb-4"
-          value={selectedIndex}
-          onChange={(e) => setSelectedIndex(e.target.value)}
-        >
-          <option value="">Select an Index</option>
-          {indices.map((index) => (
-            <option key={index} value={index}>
+        {/* Add Index Section */}
+        <div className="mb-4">
+          <button
+            onClick={() => setDropdownOpen((prev) => !prev)}
+            className="flex items-center gap-2 bg-white border px-4 py-2 rounded-lg shadow hover:bg-blue-100 transition"
+          >
+            <FiPlus />
+            Add Index
+          </button>
+
+          {dropdownOpen && (
+            <div className="mt-2 bg-white border rounded-lg shadow w-64 z-10">
+              {indices
+                .filter((index) => !selectedIndices.includes(index))
+                .map((index) => (
+                  <div
+                    key={index}
+                    onClick={() => handleAddIndex(index)}
+                    className="px-4 py-2 cursor-pointer hover:bg-blue-100"
+                  >
+                    {index}
+                  </div>
+                ))}
+              {indices.filter((i) => !selectedIndices.includes(i)).length === 0 && (
+                <div className="px-4 py-2 text-gray-400">All indices selected</div>
+              )}
+            </div>
+          )}
+        </div>
+
+        {/* Selected Indices Display */}
+        <div className="mb-4 flex flex-wrap gap-2">
+          {selectedIndices.map((index) => (
+            <span
+              key={index}
+              className="flex items-center bg-blue-100 text-blue-700 px-3 py-1 rounded-full"
+            >
               {index}
-            </option>
+              <button
+                onClick={() => handleRemoveIndex(index)}
+                className="ml-2 text-blue-600 hover:text-red-600"
+              >
+                <FiX />
+              </button>
+            </span>
           ))}
-        </select>
+        </div>
 
         <button
-          onClick={handleSubmit}
+          onClick={handleImport}
           className="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition mb-6"
         >
           Import Data
