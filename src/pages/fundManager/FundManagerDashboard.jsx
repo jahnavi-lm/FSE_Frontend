@@ -10,7 +10,9 @@ import Backtest from "../../components/Dashboard/Backtest";
 import Overview from "../../components/Dashboard/OverView";
 import Compare from "../../components/Dashboard/Compare";
 import Results from "../../components/Dashboard/Results";
+import ImportCandleData from "../../components/dashboard/ImportCandleData";
 import { initialResults } from "../../../Data/ResultsData";
+import BacktestYourScript from "./BacktestYourScript";
 
 const FundManagerDashboard = () => {
   const [showValues, setShowValues] = useState(true);
@@ -27,7 +29,7 @@ const FundManagerDashboard = () => {
   const displayValue = (val) =>
     showValues ? `₹${val.toLocaleString()}` : "****";
 
-  const tabs = ["Overview", "Strategies", "Backtest", "Compare", "Results"];
+  const tabs = ["Overview", "Strategies", "Backtest", "Compare", "Results", "Candle Data", "Backtest Your Script"];
 
   return (
     <div className="max-w-7xl mx-auto px-6 py-6 min-h-screen">
@@ -112,6 +114,8 @@ const FundManagerDashboard = () => {
           {selectedTab === "Results" && (
             <Results results={results} />
           )}
+          {selectedTab === "Candle Data" && <ImportCandleData />}
+          {selectedTab === "Backtest Your Script" && <BacktestYourScript />}
         </div>
       </div>
     </div>
