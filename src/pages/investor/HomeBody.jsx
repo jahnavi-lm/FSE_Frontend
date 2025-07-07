@@ -11,6 +11,7 @@ import {
 import InvDashPortfolio from "../../components/Investor/Inv-Dash-portfolio";
 import InvDashAllSchemes from "../../components/Investor/Inv-Dash-AllScheme";
 import InvDashTransactions from "../../components/Investor/Inv-Dash-AllTxn";
+import { getInvestorSummary } from "../../api/investorApi";
 
 const InvestorHomeBody = () => {
   const [showValues, setShowValues] = useState(true);
@@ -26,14 +27,21 @@ const InvestorHomeBody = () => {
   useEffect(() => {
     document.title = "Home | Investor";
 
-    // Fetch summary data from backend
-    fetch("http://localhost:8080/api/investor/summary")
-      .then((res) => {
-        if (!res.ok) throw new Error("Failed to fetch summary data");
-        return res.json();
-      })
+    const investor = JSON.parse(localStorage.getItem("user"));
+    const investorId = investor?.id;
+    if (!investorId) {
+      console.warn("Investor ID not found in localStorage");
+      return;
+    }
+
+    getInvestorSummary(investorId)
       .then((data) => {
-        setSummaryData(data);
+         setSummaryData({
+    invested: data.totalInvested,
+    current: data.currentValue,
+    returns: data.totalReturns,
+    wallet: data.walletBalance,
+  });
       })
       .catch((err) => {
         console.error("Error fetching investor summary:", err);

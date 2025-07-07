@@ -1,48 +1,26 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
+import { getAllSchemes } from "../../api/investorApi"; // You must create this API
 
 function InvDashAllSchemes() {
-  const originalData = [
-    {
-      name: "Axis Bluechip Fund - Direct Growth Plan - Long Term Equity",
-      nav: 61.34,
-      category: "Large Cap",
-      risk: "Moderate",
-      Amount: 12.5,
-    },
-    {
-      name: "Parag Parikh Flexi Cap Fund - Growth Option",
-      nav: 92.11,
-      category: "Flexi Cap",
-      risk: "Moderately High",
-      Amount: 18.2,
-    },
-    {
-      name: "Mirae Asset Emerging Bluechip - Direct Growth",
-      nav: 83.79,
-      category: "Mid Cap",
-      risk: "High",
-      Amount: 7.3,
-    },
-    {
-      name: "SBI Equity Hybrid Fund - Direct Plan - Growth",
-      nav: 58.25,
-      category: "Hybrid",
-      risk: "Low",
-      Amount: 9.6,
-    },
-    {
-      name: "HDFC Midcap Opportunities - Direct Plan",
-      nav: 73.45,
-      category: "Mid Cap",
-      risk: "Moderate",
-      Amount: 5.2,
-    },
-  ];
-
+  const [schemes, setSchemes] = useState([]);
   const [sortKey, setSortKey] = useState(null);
   const [sortOrder, setSortOrder] = useState("asc");
   const [currentPage, setCurrentPage] = useState(1);
-  const rowsPerPage = 3;
+  const rowsPerPage = 5;
+
+  useEffect(() => {
+    async function fetchSchemes() {
+      try {
+        const data = await getAllSchemes();
+        setSchemes(data);
+      } catch (error) {
+        console.error("Failed to fetch schemes", error);
+        setSchemes([]);
+      }
+    }
+
+    fetchSchemes();
+  }, []);
 
   const handleSort = (key) => {
     if (sortKey === key) {
@@ -53,7 +31,7 @@ function InvDashAllSchemes() {
     }
   };
 
-  const sortedData = [...originalData].sort((a, b) => {
+  const sortedData = [...schemes].sort((a, b) => {
     if (!sortKey) return 0;
 
     const valA = a[sortKey];
@@ -82,7 +60,7 @@ function InvDashAllSchemes() {
           All Mutual Fund Schemes
         </h3>
         <p className="text-gray-700 mb-6">
-          Sort and explore funds to understand NAVs, risk level, and your current Amounts.
+          Sort and explore funds to understand NAVs, risk level, and available investment.
         </p>
 
         <div className="overflow-x-auto">
@@ -91,12 +69,12 @@ function InvDashAllSchemes() {
               <tr>
                 <th
                   className="p-3 font-semibold cursor-pointer select-none w-[256px]"
-                  onClick={() => handleSort("name")}
+                  onClick={() => handleSort("fundName")}
                 >
                   <span className="inline-flex items-center gap-1">
                     Fund Name
                     <span className="inline-block text-xs">
-                      {sortKey === "name"
+                      {sortKey === "fundName"
                         ? sortOrder === "asc"
                           ? "▲"
                           : "▼"
@@ -123,12 +101,12 @@ function InvDashAllSchemes() {
                 <th className="p-3 font-semibold w-[120px]">Risk</th>
                 <th
                   className="p-3 font-semibold cursor-pointer select-none w-[100px]"
-                  onClick={() => handleSort("Amount")}
+                  onClick={() => handleSort("amount")}
                 >
                   <span className="inline-flex items-center gap-1">
                     Amount ₹
                     <span className="inline-block text-xs">
-                      {sortKey === "Amount"
+                      {sortKey === "amount"
                         ? sortOrder === "asc"
                           ? "▲"
                           : "▼"
@@ -141,25 +119,35 @@ function InvDashAllSchemes() {
             </thead>
 
             <tbody className="bg-white divide-y divide-blue-100">
-              {paginatedData.map((scheme, idx) => (
-                <tr key={idx}>
-                  <td
-                    className="p-3 font-medium text-gray-800 w-[256px] truncate"
-                    title={scheme.name}
-                  >
-                    {scheme.name}
-                  </td>
-                  <td className="p-3 text-gray-700 w-[100px]">₹{scheme.nav}</td>
-                  <td className="p-3 text-gray-700 w-[120px]">{scheme.category}</td>
-                  <td className="p-3 text-gray-700 w-[120px]">{scheme.risk}</td>
-                  <td className="p-3 text-gray-700 w-[100px]">₹{scheme.Amount}</td>
-                  <td className="p-3 w-[100px]">
-                    <button className="bg-indigo-600 hover:bg-indigo-700 text-white px-3 py-1 rounded-md text-sm transition duration-200">
-                      View
-                    </button>
+              {paginatedData.length === 0 ? (
+                <tr>
+                  <td colSpan="6" className="p-4 text-center text-gray-500">
+                    No schemes available right now to display. <br />
+                    Waiting for Fund Manager / AMC to add.
                   </td>
                 </tr>
-              ))}
+              ) : (
+                paginatedData.map((scheme, idx) => (
+                  <tr key={idx}>
+                    <td className="p-3 font-medium text-gray-800 w-[256px] truncate" title={scheme.fundName}>
+                      {scheme.fundName}
+                    </td>
+                    <td className="p-3 text-gray-700 w-[100px]">₹{scheme.nav}</td>
+                    <td className="p-3 text-gray-700 w-[120px]">{scheme.category}</td>
+                    <td className="p-3 text-gray-700 w-[120px]">{scheme.riskLevel}</td>
+                    <td className="p-3 text-gray-700 w-[100px]">₹{scheme.amount.toLocaleString()}</td>
+                    <td className="p-3 w-[100px]">
+                      <Link
+                        to={`/view/fund/${scheme.fundSchemeId}`}
+                        className="bg-indigo-600 hover:bg-indigo-700 text-white px-3 py-1 rounded-md text-sm transition duration-200"
+                      >
+                        View
+                      </Link>
+                    </td>
+                  </tr>
+                ))
+              )}
+
             </tbody>
           </table>
         </div>
