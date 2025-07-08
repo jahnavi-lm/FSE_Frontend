@@ -87,10 +87,10 @@ const CompleteProfile = () => {
       <div className="max-w-3xl mx-auto px-4 py-3">
         <div className="bg-blue-50 border border-blue-200 px-4 py-2 rounded-xl shadow-lg">
           <h2 className="text-2xl font-semibold text-blue-800 mb-2 flex items-center gap-2">
-            <FaUserEdit className="text-blue-500" /> Complete Your Profile
+            <FaUserEdit className="text-blue-500" /> Dear Investor: Complete Your Profile
           </h2>
 
-          <form className="grid grid-cols-1 sm:grid-cols-2 gap-4" onSubmit={handleSubmit}>
+  <form className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-1" onSubmit={handleSubmit}>
   <div>
     <label htmlFor="dob" className="block text-sm text-gray-600 mb-0.5">
       Your DOB (dd-mm-yyyy)

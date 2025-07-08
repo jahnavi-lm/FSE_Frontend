@@ -32,11 +32,33 @@ export default function UserRedirect() {
           break;
 
         case "MANAGER":
-          navigate("/Manager/Home");
+         try {
+            const res = await axiosClient.get(`/api/fundManagers/exists/${user.id}`);
+            console.log("Fund Manager exists:", res?.data); // For debugging
+            if (res?.data === true) {
+              navigate("/dashboard/fund-manager");
+            } else {
+              navigate("/manager/Register");
+            }
+          } catch (err) {
+            console.error("Fund Manager existence check failed:", err);
+            navigate("/manager/register");
+          }
           break;
 
         case "AMC":
-          navigate("/Amc/Home");
+         try {
+            const res = await axiosClient.get(`/api/amcs/exists/${user.id}`);
+            console.log("AMC exists:", res?.data); // For debugging
+            if (res?.data === true) {
+              navigate("/dashboard/amc");
+            } else {
+              navigate("/amc/Register");
+            }
+          } catch (err) {
+            console.error("AMC existence check failed:", err);
+            navigate("/amc/Register");
+          }
           break;
 
         default:
