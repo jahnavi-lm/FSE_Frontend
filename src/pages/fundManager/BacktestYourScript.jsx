@@ -284,12 +284,19 @@ export default function StrategyBacktestApp() {
                 Trades Table
               </h3>
               <div className="overflow-x-auto mt-2 bg-white rounded-lg shadow p-4">
-                <table className="w-full table-auto text-left border border-gray-200 rounded-lg overflow-hidden">
+                <table className="w-full table-auto text-left border border-gray-200 rounded-lg overflow-hidden text-sm">
                   <thead className="bg-gray-100">
                     <tr>
                       <th className="px-4 py-2">Date</th>
                       <th className="px-4 py-2">Action</th>
                       <th className="px-4 py-2">Price</th>
+                      <th className="px-4 py-2">Symbol</th>
+                      <th className="px-4 py-2">Quantity</th>
+                      <th className="px-4 py-2">Total Cost</th>
+                      <th className="px-4 py-2">Opening Balance</th>
+                      <th className="px-4 py-2">Closing Balance</th>
+                      <th className="px-4 py-2">NAV</th>
+                      <th className="px-4 py-2">Realized Profit</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -309,6 +316,29 @@ export default function StrategyBacktestApp() {
                           {trade.action}
                         </td>
                         <td className="px-4 py-2">₹{trade.price.toFixed(2)}</td>
+                        <td className="px-4 py-2">{trade.symbol || "—"}</td>
+                        <td className="px-4 py-2">{trade.quantity}</td>
+                        <td className="px-4 py-2">
+                          ₹{trade.totalCostPrice.toFixed(2)}
+                        </td>
+                        <td className="px-4 py-2">
+                          ₹{trade.openingBalance.toFixed(2)}
+                        </td>
+                        <td className="px-4 py-2">
+                          ₹{trade.closingBalance.toFixed(2)}
+                        </td>
+                        <td className="px-4 py-2">₹{trade.price.toFixed(2)}</td>
+                        <td
+                          className={`px-4 py-2 font-bold ${
+                            trade.realizedProfit > 0
+                              ? "text-green-600"
+                              : trade.realizedProfit < 0
+                              ? "text-red-600"
+                              : "text-gray-600"
+                          }`}
+                        >
+                          ₹{trade.realizedProfit.toFixed(2)}
+                        </td>
                       </tr>
                     ))}
                   </tbody>
