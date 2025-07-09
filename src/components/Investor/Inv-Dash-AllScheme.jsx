@@ -1,5 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { getAllSchemes } from "../../api/investorApi"; // You must create this API
+import { Link } from 'react-router-dom';
+
 
 function InvDashAllSchemes() {
   const [schemes, setSchemes] = useState([]);
@@ -87,7 +89,7 @@ function InvDashAllSchemes() {
                   onClick={() => handleSort("nav")}
                 >
                   <span className="inline-flex items-center gap-1">
-                    NAV ₹
+                    Cur-NAV ₹
                     <span className="inline-block text-xs">
                       {sortKey === "nav"
                         ? sortOrder === "asc"
@@ -138,7 +140,7 @@ function InvDashAllSchemes() {
                     <td className="p-3 text-gray-700 w-[100px]">₹{scheme.amount.toLocaleString()}</td>
                     <td className="p-3 w-[100px]">
                       <Link
-                        to={`/view/fund/${scheme.fundSchemeId}`}
+                        to={`/view/fund/${scheme.id}`}
                         className="bg-indigo-600 hover:bg-indigo-700 text-white px-3 py-1 rounded-md text-sm transition duration-200"
                       >
                         View

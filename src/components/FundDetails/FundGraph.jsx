@@ -8,7 +8,7 @@ const mockData = [
 
 function FundGraph() {
   return (
-    <div className="bg-white shadow-xl rounded-2xl p-6">
+    <div className="bg-white shadow-xl rounded-2xl p-6 mt-15">
       <h3 className="text-xl font-semibold text-indigo-700 mb-4">Past 3 Month Performance</h3>
       <LineChart width={500} height={250} data={mockData}>
         <XAxis dataKey="date" />

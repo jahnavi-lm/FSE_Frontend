@@ -1,33 +1,78 @@
-import React, { useState } from "react";
-import { Dialog, Transition } from "@headlessui/react";
-import { Fragment } from "react";
+import React, { useEffect, useState, Fragment } from "react";
+import { Dialog, Transition, Switch } from "@headlessui/react";
+import { investInFund, getWalletBalanceByInvestorId } from "../../api/viewfundApi";
 
-function FundActionModal({ isOpen, onClose, actionType, fundData, wallet = 200000, onConfirm }) {
+function FundActionModal({
+  isOpen,
+  onClose,
+  actionType,
+  fundData,
+  onConfirm,
+}) {
   const [amount, setAmount] = useState("");
+  const [buyByAmount, setBuyByAmount] = useState(true); // true = amount, false = units
+  const [txnResult, setTxnResult] = useState(null);
+  const [wallet, setWallet] = useState(null);
+  const user = JSON.parse(localStorage.getItem("user")); // assuming localStorage key is "user"
 
   const {
     name = "Unnamed Fund",
     currentNav = 0,
     avgNav = 0,
     invested = 0,
+    id: schemeId,
+    investorId = user?.id,
+    
   } = fundData || {};
+   
+ 
 
   const unitsOwned = invested / avgNav || 0;
+  const amountToInvest = buyByAmount
+    ? Number(amount)
+    : Number(amount) * currentNav;
 
   const expectedReturn =
     actionType === "SELL"
       ? (parseFloat(amount || 0) * currentNav).toFixed(2)
       : null;
 
-  const isBuyDisabled = actionType === "BUY" && Number(amount) > wallet;
+  const isBuyDisabled =
+    actionType === "BUY" &&
+    (amountToInvest > wallet || amountToInvest <= 0 || isNaN(amount));
+
   const isSellDisabled =
     actionType === "SELL" &&
     (Number(amount) > unitsOwned || isNaN(amount) || Number(amount) <= 0);
 
-  const handleConfirm = () => {
-    onConfirm?.(amount);
+  useEffect(() => {
+     if (!investorId) return;
+        getWalletBalanceByInvestorId(investorId)
+         .then((res) => setWallet(res.data.walletValue))
+      .catch((err) => {
+        console.error("Failed to fetch wallet", err);
+        setWallet(0);
+      });
+  }, [investorId]);
+
+  const handleConfirm = async () => {
+    if (actionType === "BUY") {
+      try {
+        const res = await investInFund({
+          investorId,
+          schemeId,
+          amount: amountToInvest,
+        });
+        setTxnResult(res.data);
+        setAmount("");
+      } catch (err) {
+        console.error("Buy failed", err);
+        setTxnResult({ message: "Investment failed" });
+      }
+    } else {
+      onConfirm?.(amount); // placeholder
+    }
     onClose();
-    setAmount("");
   };
 
   return (
@@ -57,47 +102,74 @@ function FundActionModal({ isOpen, onClose, actionType, fundData, wallet = 20000
               leaveTo="opacity-0 scale-90"
             >
               <Dialog.Panel className="w-full max-w-md rounded-xl bg-white p-6 shadow-xl">
-                <Dialog.Title className="text-xl font-semibold text-indigo-700 mb-4">
-                  {actionType === "BUY" ? "Buy More Units" : "Sell Units"} – {name}
-                </Dialog.Title>
+               <Dialog.Title className="text-xl font-semibold text-indigo-700 mb-4 text-center">
+                {actionType === "BUY" ? "Buy More Units" : "Sell Units"}
+                <div className="text-sm font-medium text-gray-600 mt-1">{name}</div>
+              </Dialog.Title>
+
 
                 <div className="space-y-3 text-gray-700 text-sm">
                   <p>💼 <strong>Current NAV:</strong> ₹{currentNav.toFixed(2)}</p>
 
                   {actionType === "BUY" && (
-                    <p>💰 <strong>Wallet Balance:</strong> ₹{wallet.toLocaleString()}</p>
+                    <p>💰 <strong>Wallet Balance:</strong> ₹{wallet !== null ? wallet.toLocaleString() : "Loading..."}</p>
                   )}
 
                   {actionType === "SELL" && (
                     <>
-                      <p>💸 <strong>Invested Amount:</strong> ₹{invested.toLocaleString()}</p>
-                      <p>📈 <strong>Average NAV:</strong> ₹{avgNav.toFixed(2)}</p>
+                      <p>💸 <strong>Invested:</strong> ₹{invested.toLocaleString()}</p>
+                      <p>📈 <strong>Avg NAV:</strong> ₹{avgNav.toFixed(2)}</p>
                       <p>📦 <strong>Units Owned:</strong> {unitsOwned.toFixed(2)} units</p>
                       <p>🔁 <strong>Expected Return:</strong> ₹{expectedReturn}</p>
                     </>
                   )}
 
-                  <div>
-                    <label className="block text-sm font-medium mb-1">
-                      {actionType === "BUY" ? "Amount to Invest (₹)" : "Units to Sell"}
-                    </label>
-                    <input
-                      type="number"
-                      className="w-full border border-gray-300 rounded-md p-2"
-                      value={amount}
-                      onChange={(e) => setAmount(e.target.value)}
-                      placeholder={actionType === "BUY" ? "Enter amount" : "Enter units"}
-                    />
-                  </div>
+                  {actionType === "BUY" && (
+                    <>
+                      <div className="flex items-center justify-between">
+                        <span className="text-sm">
+                          {buyByAmount ? "💰 Buy by Amount" : "📦 Buy by Units"}
+                        </span>
+                        <Switch
+                          checked={buyByAmount}
+                          onChange={setBuyByAmount}
+                          className={`${
+                            buyByAmount ? "bg-indigo-600" : "bg-gray-300"
+                          } relative inline-flex h-6 w-11 items-center rounded-full`}
+                        >
+                          <span className="sr-only">Toggle Buy Mode</span>
+                          <span
+                            className={`${
+                              buyByAmount ? "translate-x-6" : "translate-x-1"
+                            } inline-block h-4 w-4 transform rounded-full bg-white transition`}
+                          />
+                        </Switch>
+                      </div>
 
-                  {isBuyDisabled && (
-                    <p className="text-red-600 text-sm">
-                      Amount exceeds wallet balance.
-                    </p>
+                      <div className="mt-2">
+                        <label className="block text-sm font-medium mb-1">
+                          {buyByAmount ? "Amount to Invest (₹)" : "Units to Buy"}
+                        </label>
+                        <input
+                          type="number"
+                          className="w-full border border-gray-300 rounded-md p-2"
+                          value={amount}
+                          onChange={(e) => setAmount(e.target.value)}
+                          placeholder={buyByAmount ? "Enter amount" : "Enter units"}
+                        />
+                      </div>
+
+                      {isBuyDisabled && (
+                        <p className="text-red-600 text-sm">
+                          Amount exceeds wallet or is invalid.
+                        </p>
+                      )}
+                    </>
                   )}
+
                   {isSellDisabled && (
                     <p className="text-red-600 text-sm">
-                      You cannot sell more units than you own.
+                      You cannot sell more units than owned.
                     </p>
                   )}
                 </div>
@@ -121,6 +193,19 @@ function FundActionModal({ isOpen, onClose, actionType, fundData, wallet = 20000
                     {actionType === "BUY" ? "Buy Now" : "Sell Now"}
                   </button>
                 </div>
+
+                {txnResult && (
+                  <div className="mt-4 bg-green-50 border border-green-200 p-3 rounded-md text-sm text-green-800">
+                    <p><strong>{txnResult.message}</strong></p>
+                    {txnResult.unitsAllocated && (
+                      <>
+                        <p>✅ Units Allocated: {txnResult.unitsAllocated.toFixed(4)}</p>
+                        <p>📈 NAV at Purchase: ₹{txnResult.navAtPurchase}</p>
+                        <p>🕒 Time: {new Date(txnResult.txnTime).toLocaleString()}</p>
+                      </>
+                    )}
+                  </div>
+                )}
               </Dialog.Panel>
             </Transition.Child>
           </div>

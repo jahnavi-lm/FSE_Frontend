@@ -5,11 +5,12 @@ import { useNavigate } from "react-router-dom";
 
 const CompleteAmcProfile = () => {
   const navigate = useNavigate();
+  const user = JSON.parse(localStorage.getItem("user"));
 
   const [form, setForm] = useState({
     name: "",
     registrationNo: "",
-    contactEmail: "",
+    contactEmail: user.email,
     contactPhone: "",
     officeAddress: "",
   });
@@ -90,11 +91,12 @@ const CompleteAmcProfile = () => {
 
             <div>
               <label htmlFor="registrationNo" className="block text-gray-700 mb-1">
-                Registration Number
+                Registration Number <span className="text-gray-400">(As per your card.)</span>
               </label>
               <input
                 type="text"
                 name="registrationNo"
+                minLength="5"
                 required
                 placeholder="e.g. 123456"
                 className="w-full p-2 border border-gray-300 rounded-md"
@@ -108,14 +110,15 @@ const CompleteAmcProfile = () => {
                 Contact Email
               </label>
               <input
-                type="email"
-                name="contactEmail"
-                required
-                placeholder="e.g. contact@amc.com"
-                className="w-full p-2 border border-gray-300 rounded-md"
-                value={form.contactEmail}
-                onChange={handleChange}
-              />
+              readOnly
+              type="email"
+              placeholder="e.g. contact@amc.com"
+              className="w-full p-2 border border-gray-300 rounded-md bg-gray-100 text-gray-500 cursor-not-allowed hover:border-red-500"
+              value={form.contactEmail}
+              onChange={handleChange}
+              required
+             />
+
             </div>
 
             <div>

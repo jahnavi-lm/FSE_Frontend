@@ -64,7 +64,7 @@ const router = createBrowserRouter([
         children: [
           { path: "/dashboard/fund-manager", element: <FundManagerDashboard /> },
           { path: "/dashboard/investor", element: <InvestorHome /> },
-          { path: "/dashboard/investor/my-account", element: <MyAccount /> },
+          { path: "/dashboard/my-account", element: <MyAccount /> },
           { path: "/dashboard/amc", element: <AmcDashboard /> },
           { path: "/view/fund/:id", element: <FundDetails /> },
           { path: "/investor/register", element: <CompleteProfile /> },

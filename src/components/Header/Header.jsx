@@ -94,7 +94,7 @@ export default function Header() {
           {/* Icons */}
           <div className="flex items-center gap-3">
             <IconButton icon={<FiBell />} tooltip="Notifications" />
-            {!hideNav && <IconButton icon={<FiUser />} tooltip="Profile" to="/dashboard/investor/my-account" />}
+            {!hideNav && <IconButton icon={<FiUser />} tooltip="Profile" to="/dashboard/my-account" />}
             <IconButton icon={<FiLogOut />} tooltip="Logout" onClick={handleLogout} color="text-red-600" />
           </div>
         </div>
