@@ -8,11 +8,18 @@ export default function StrategiesForm({ onSave, onCancel, initialValues }) {
   useEffect(() => {
     if (initialValues) {
       setType(initialValues.type || '');
-      setFormValues(initialValues);
-    } else {
-      setType('');
-      setFormValues({});
-    }
+      let params = {};
+      try {
+        params = initialValues.parametersJson ? JSON.parse(initialValues.parametersJson) : {};
+      } catch (e) {
+        console.error('Invalid JSON in parametersJson:', e);
+      }
+      setFormValues({
+        name: initialValues.name || '',
+        capitalAllocation: initialValues.capitalAllocation || '',
+        ...params,
+      });
+    }    
   }, [initialValues]);
 
   const handleChange = (e) => {
@@ -22,10 +29,14 @@ export default function StrategiesForm({ onSave, onCancel, initialValues }) {
   const handleSubmit = (e) => {
     e.preventDefault();
 
+    const { name, capitalAllocation, ...parameterFields } = formValues;
+
     const newStrategy = {
-      ...formValues,
-      id: initialValues?.id || Date.now(),
+      ...(initialValues?.id ? { id: initialValues.id } : {}),
+      name,
       type,
+      capitalAllocation: parseFloat(capitalAllocation),
+      parametersJson: JSON.stringify(parameterFields),
     };
 
     onSave(newStrategy);
