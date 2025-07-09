@@ -41,6 +41,11 @@ export default function Header() {
     }
   };
 
+  const handleLogout = () => {
+    localStorage.clear();
+    navigate('/login', { replace: true });
+  };
+
   return (
     <header
       className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
@@ -66,7 +71,6 @@ export default function Header() {
 
         {/* Navigation and Action Icons */}
         <div className="flex items-center gap-6">
-          {/* Navigation Links - only if not on /register */}
           {!hideNav && (
             <nav className="hidden md:flex gap-6 text-sm font-medium text-gray-700">
               {user?.role === 'INVESTOR' && (
@@ -87,11 +91,11 @@ export default function Header() {
             </nav>
           )}
 
-          {/* Icons - always show, but conditionally render based on route */}
+          {/* Icons */}
           <div className="flex items-center gap-3">
-             <IconButton icon={<FiBell />} tooltip="Notifications" />
-            {!hideNav &&<IconButton icon={<FiUser />} tooltip="Profile" to="/dashboard/investor/my-account" />}
-            <IconButton icon={<FiLogOut />} tooltip="Logout" to="/login" color="text-red-600" />
+            <IconButton icon={<FiBell />} tooltip="Notifications" />
+            {!hideNav && <IconButton icon={<FiUser />} tooltip="Profile" to="/dashboard/investor/my-account" />}
+            <IconButton icon={<FiLogOut />} tooltip="Logout" onClick={handleLogout} color="text-red-600" />
           </div>
         </div>
       </div>
@@ -100,13 +104,13 @@ export default function Header() {
 }
 
 /* Reusable Icon Button */
-function IconButton({ icon, tooltip, to, color = 'text-gray-700' }) {
+function IconButton({ icon, tooltip, to, onClick, color = 'text-gray-700' }) {
   const base =
     'group relative flex items-center justify-center w-10 h-10 rounded-full bg-gray-100 hover:bg-[#fa6b11]/20 transition-all duration-300 ease-in-out';
   const iconStyle = `text-lg ${color} group-hover:text-[#fa6b11] transition-transform duration-200 transform group-hover:scale-110`;
 
   const ButtonContent = (
-    <div className={base}>
+    <div className={base} onClick={onClick}>
       <span className={iconStyle}>{icon}</span>
       <span className="absolute -bottom-7 text-xs text-gray-500 opacity-0 group-hover:opacity-100 transition-opacity">
         {tooltip}
