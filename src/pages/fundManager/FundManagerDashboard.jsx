@@ -29,7 +29,7 @@ const FundManagerDashboard = () => {
   const displayValue = (val) =>
     showValues ? `₹${val.toLocaleString()}` : "****";
 
-  const tabs = ["Overview", "Strategies", "Backtest", "Compare", "Results", "Candle Data", "Backtest Your Script"];
+  const tabs = ["Overview", "Strategies", "Compare", "Results", "Candle Data", "Backtest Your Script"];
 
   return (
     <div className="max-w-7xl mx-auto px-6 py-6 min-h-screen">
@@ -76,13 +76,13 @@ const FundManagerDashboard = () => {
           <p className="text-2xl font-bold mt-2">{managerData.strategies}</p>
         </div>
 
-        <div className="bg-white text-teal-700 shadow-sm rounded-xl p-5 border border-teal-200">
+        {/* <div className="bg-white text-teal-700 shadow-sm rounded-xl p-5 border border-teal-200">
           <div className="flex items-center gap-2 text-lg font-medium">
             <FaTools />
             <span>Backtests</span>
           </div>
           <p className="text-2xl font-bold mt-2">{managerData.backtests}</p>
-        </div>
+        </div> */}
       </div>
 
       {/* Tab Section */}
@@ -107,9 +107,9 @@ const FundManagerDashboard = () => {
         <div>
           {selectedTab === "Overview" && <Overview />}
           {selectedTab === "Strategies" && <Strategies />}
-          {selectedTab === "Backtest" && (
+          {/* {selectedTab === "Backtest" && (
             <Backtest results={results} setResults={setResults} />
-          )}
+          )} */}
           {selectedTab === "Compare" && <Compare />}
           {selectedTab === "Results" && (
             <Results results={results} />
