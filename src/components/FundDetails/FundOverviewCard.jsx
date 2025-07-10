@@ -8,8 +8,8 @@ function FundOverviewCard({ fundId  }) {
   const [showWallet, setShowWallet] = useState(true);
 
   const myHoldings = {
-    units: 810.5,
-    value: 12493.34,
+    units: "Loading",
+    value: "Loading",
   };
  const user = JSON.parse(localStorage.getItem("user")); // assuming localStorage key is "user"
  const investorId = user?.id;
@@ -38,7 +38,7 @@ function FundOverviewCard({ fundId  }) {
   const { name, currentNav, riskLevel, category, benchmarkIndex } = fund;
 
   return (
-    <div className="bg-white shadow-md rounded-xl p-4 space-y-4">
+    <div className="bg-white shadow-md rounded-xl p-4 space-y-4 mt-5">
       <h2 className="text-lg font-semibold text-indigo-700">{name}</h2>
 
       <div className="grid grid-cols-2 gap-2 text-sm">

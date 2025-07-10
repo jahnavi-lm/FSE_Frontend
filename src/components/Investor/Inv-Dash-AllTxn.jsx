@@ -1,7 +1,9 @@
-import React, { useState } from "react";
+import React, { useState , useEffect } from "react";
+import { getInvestorTransactions } from "../../api/investorApi"; 
+import { Link } from 'react-router-dom';
 
 function InvDashTransactions() {
-  const [activeTab, setActiveTab] = useState("bank");
+  const [activeTab, setActiveTab] = useState("invest");
 
   const bankTransactions = [
     {
@@ -20,22 +22,19 @@ function InvDashTransactions() {
     },
   ];
 
-  const investmentHistory = [
-    {
-      date: "2024-05-10",
-      fund: "Axis Bluechip Fund",
-      action: "Buy",
-      amount: 10000,
-      nav: 61.25,
-    },
-    {
-      date: "2024-06-05",
-      fund: "Parag Parikh Flexi Cap",
-      action: "SIP",
-      amount: 5000,
-      nav: 91.85,
-    },
-  ];
+  const [investmentHistory, setInvestmentHistory] = useState([]);
+  useEffect(() => {
+  const investorId = JSON.parse(localStorage.getItem("user"))?.id;
+  if (!investorId) return;
+
+  getInvestorTransactions(investorId)
+    .then(setInvestmentHistory)
+    .catch((err) => {
+      console.error("Failed to fetch transactions", err);
+      setInvestmentHistory([]);
+    });
+}, []);
+
 
   return (
     <div className="flex flex-col space-y-6">
@@ -120,22 +119,28 @@ function InvDashTransactions() {
                 </thead>
                 <tbody className="bg-white divide-y divide-blue-100">
                   {investmentHistory.map((txn, idx) => (
-                    <tr key={idx}>
-                      <td className="p-3 text-gray-700">{txn.date}</td>
-                      <td className="p-3 text-gray-700 truncate" title={txn.fund}>
-                        {txn.fund}
-                      </td>
-                      <td className="p-3 text-gray-700">{txn.action}</td>
-                      <td className="p-3 text-gray-700">₹{txn.amount}</td>
-                      <td className="p-3 text-gray-700">{txn.nav}</td>
-                      <td className="p-3 text-gray-700">{}</td>
-                       <td className="p-3">
-                        <button className="bg-indigo-600 hover:bg-indigo-700 text-white px-3 py-1 rounded-md text-sm transition duration-200">
+                <tr key={idx}>
+                  <td className="p-3 text-gray-700">
+                    {new Date(txn.txnTime).toLocaleDateString()}
+                  </td>
+                  <td className="p-3 text-gray-700 truncate" title={txn.schemeName}>
+                    {txn.schemeName}
+                  </td>
+                  <td className="p-3 text-gray-700">{txn.type}</td>
+                  <td className="p-3 text-gray-700">₹{txn.amount.toFixed(2)}</td>
+                  <td className="p-3 text-gray-700">{txn.navAtTransaction.toFixed(2)}</td>
+                  <td className="p-3 text-gray-700">{txn.units.toFixed(4)}</td>
+                  <td className="p-3">
+                     <Link
+                        to={`/view/fund/${txn.schemeId}`}
+                        className="bg-indigo-600 hover:bg-indigo-700 text-white px-3 py-1 rounded-md text-sm transition duration-200"
+                      >
                         View
-                        </button>
-                    </td>
-                    </tr>
-                  ))}
+                      </Link>
+                  </td>
+                </tr>
+              ))}
+
                 </tbody>
               </table>
             </div>

@@ -26,20 +26,23 @@ function FundDetails() {
       {/* Left: Summary Card (compact) */}
       <div className="w-full lg:w-1/3">
         <FundOverviewCard fundId={id} />
-         <FundExtraDetails fundId={id} /> {/* <- Move extra info here */}
+        <FundActionBar fundId={id} />
+        <FundGraph fundId={id} />
+        
       </div>
 
       {/* Right: Actions + Graph */}
       <div className="w-full lg:w-2/3 space-y-4">
-        <FundActionBar fundId={id} />
-        <FundGraph fundId={id} />
+       <FundExtraDetails fundId={id} /> {/* <- Move extra info here */}
+        <FundTransactionTable fundId={id} />
+        
        
       </div>
 
     </div>
 
     {/* Below: Transactions */}
-    <FundTransactionTable fundId={id} />
+   
 
   </div>
 </div>
