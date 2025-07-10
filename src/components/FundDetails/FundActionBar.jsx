@@ -37,7 +37,7 @@ const { id: fundId } = useParams();
   };
 
   return (
-    <div className="bg-white shadow-xl rounded-2xl p-6 flex justify-center space-x-4 mb-10">
+    <div className="bg-white shadow-xl rounded-2xl p-6 flex justify-center space-x-4 mb-10 mt-10">
       <button
         onClick={() => openModal("BUY")}
         className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg"

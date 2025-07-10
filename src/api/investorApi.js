@@ -31,3 +31,13 @@ export async function getAllSchemes() {
     throw error;
   }
 }
+export const getInvestorTransactions = async (investorId) => {
+  const res = await axiosClient.get(`/api/investors/transactions/${investorId}`);
+  return res.data;
+};
+
+export const getTransactionsForFund = async (investorId, schemeId) => {
+  const res = await axiosClient.get(`/api/investors/transactions/${investorId}/scheme/${schemeId}`);
+  return res.data;
+};
+

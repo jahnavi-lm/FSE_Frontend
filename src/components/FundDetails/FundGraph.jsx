@@ -10,11 +10,11 @@ function FundGraph() {
   return (
     <div className="bg-white shadow-xl rounded-2xl p-6 mt-15">
       <h3 className="text-xl font-semibold text-indigo-700 mb-4">Past 3 Month Performance</h3>
-      <LineChart width={500} height={250} data={mockData}>
+      <LineChart width={300} height={200} data={mockData}>
         <XAxis dataKey="date" />
         <YAxis />
         <Tooltip />
-        <Line type="monotone" dataKey="nav" stroke="#6366f1" strokeWidth={2} />
+        <Line type="monotone" dataKey="nav" stroke="#6366f1" strokeWidth={2} label="Nav" />
       </LineChart>
     </div>
   );

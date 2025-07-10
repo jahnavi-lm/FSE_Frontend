@@ -11,12 +11,20 @@ export const getWalletBalanceByInvestorId = async (investorId) => {
   return response;
 };
 
-
 export const investInFund = async ({ investorId, schemeId, amount }) => {
   const response = await axiosClient.post("/api/investors/invest", {
     investorId,
     schemeId,
     amount,
+  });
+  return response;
+};
+
+export const redeemFund = async ({ investorId, schemeId, unitsToRedeem }) => {
+  const response = await axiosClient.post("/api/investors/redeem", {
+    investorId,
+    schemeId,
+    unitsToRedeem,
   });
   return response;
 };
