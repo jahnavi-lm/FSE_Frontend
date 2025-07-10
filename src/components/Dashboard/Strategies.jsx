@@ -1,8 +1,9 @@
 import { useState, useEffect } from 'react';
 import StrategiesForm from "./StrategiesForm";
+import StrategyResultModal from "../layouts/StrategyResultModal";
 import {
   getAllStrategies,
-  createOrUpdateStrategy,
+  saveStrategy,
   deleteStrategy
 } from '../../api/strategiesApi';
 
@@ -19,16 +20,16 @@ export default function Strategies() {
   const loadStrategies = async () => {
     try {
       const response = await getAllStrategies();
-      setStrategies(response.data);
+      setStrategies(response.data || []);
     } catch (error) {
       console.error('Error loading strategies:', error);
     }
   };
-  
+
   const handleSaveStrategy = async (strategy) => {
     try {
-      await createOrUpdateStrategy(strategy);
-      await loadStrategies(); // refresh from backend
+      await saveStrategy(strategy);
+      await loadStrategies();
     } catch (error) {
       console.error('Error saving strategy:', error);
     } finally {
@@ -62,16 +63,15 @@ export default function Strategies() {
   };
 
   const handleStartSimulation = (id) => {
-    setStrategies((prev) =>
-      prev.map((s) =>
+    setStrategies(prev =>
+      prev.map(s =>
         s.id === id ? { ...s, status: 'running' } : s
       )
     );
 
-    // Simulate async processing
     setTimeout(() => {
-      setStrategies((prev) =>
-        prev.map((s) =>
+      setStrategies(prev =>
+        prev.map(s =>
           s.id === id
             ? {
                 ...s,
@@ -89,8 +89,8 @@ export default function Strategies() {
   };
 
   const handleStopSimulation = (id) => {
-    setStrategies((prev) =>
-      prev.map((s) =>
+    setStrategies(prev =>
+      prev.map(s =>
         s.id === id ? { ...s, status: 'stopped' } : s
       )
     );
@@ -116,7 +116,7 @@ export default function Strategies() {
             <thead className="bg-gray-100 text-gray-700">
               <tr>
                 <th className="px-4 py-3 border-b">Name</th>
-                <th className="px-4 py-3 border-b">Type</th>
+                <th className="px-4 py-3 border-b">Symbols</th>
                 <th className="px-4 py-3 border-b">Status</th>
                 <th className="px-4 py-3 border-b">Simulation</th>
                 <th className="px-4 py-3 border-b">Result</th>
@@ -125,59 +125,75 @@ export default function Strategies() {
               </tr>
             </thead>
             <tbody>
-              {strategies.map((strategy) => (
-                <tr key={strategy.id} className="hover:bg-gray-50">
-                  <td className="px-4 py-3 border-b font-semibold">{strategy.name}</td>
-                  <td className="px-4 py-3 border-b">{strategy.type}</td>
-                  <td className="px-4 py-3 border-b capitalize">{strategy.status}</td>
-                  <td className="px-4 py-3 border-b">
-                    {strategy.status === 'running' ? (
+              {strategies.map((strategy, index) => {
+                const id = strategy.id ?? index;
+                const name = strategy.strategyName || `Strategy ${index + 1}`;
+                const symbols = strategy.symbolList || [];
+                const status = strategy.status ? strategy.status.replace(/_/g, ' ') : 'Draft';
+
+                return (
+                  <tr key={id} className="hover:bg-gray-50">
+                    <td className="px-4 py-3 border-b font-semibold">{name}</td>
+                    <td className="px-4 py-3 border-b">
+                      {symbols.length > 0 ? (
+                        symbols.length > 3
+                          ? `${symbols.slice(0, 2).join(', ')}...`
+                          : symbols.join(', ')
+                      ) : (
+                        <span className="text-gray-400">-</span>
+                      )}
+                    </td>
+                    <td className="px-4 py-3 border-b capitalize">{status}</td>
+                    <td className="px-4 py-3 border-b">
+                      {strategy.status === 'running' ? (
+                        <button
+                          onClick={() => handleStopSimulation(strategy.id)}
+                          className="px-3 py-1 bg-red-600 text-white rounded hover:bg-red-700 transition text-xs"
+                        >
+                          Stop
+                        </button>
+                      ) : (
+                        <button
+                          onClick={() => handleStartSimulation(strategy.id)}
+                          className="px-3 py-1 bg-teal-600 text-white rounded hover:bg-teal-700 transition text-xs"
+                          disabled={strategy.status === 'completed'}
+                        >
+                          Start
+                        </button>
+                      )}
+                    </td>
+                    <td className="px-4 py-3 border-b">
+                      {strategy.result && strategy.status === 'completed' ? (
+                        <button
+                          onClick={() => setShowResult(strategy.result)}
+                          className="text-indigo-600 hover:text-indigo-800 text-xs"
+                        >
+                          View
+                        </button>
+                      ) : (
+                        <span className="text-gray-400 text-xs">-</span>
+                      )}
+                    </td>
+                    <td className="px-4 py-3 border-b">
                       <button
-                        onClick={() => handleStopSimulation(strategy.id)}
-                        className="px-3 py-1 bg-red-600 text-white rounded hover:bg-red-700 transition text-xs"
+                        onClick={() => handleEdit(strategy.id)}
+                        className="text-blue-600 hover:text-blue-800 text-xs"
                       >
-                        Stop
+                        Edit
                       </button>
-                    ) : (
+                    </td>
+                    <td className="px-4 py-3 border-b">
                       <button
-                        onClick={() => handleStartSimulation(strategy.id)}
-                        className="px-3 py-1 bg-teal-600 text-white rounded hover:bg-teal-700 transition text-xs"
-                        disabled={strategy.status === 'completed'}
+                        onClick={() => handleDelete(strategy.id)}
+                        className="text-red-600 hover:text-red-800 text-xs"
                       >
-                        Start
+                        Delete
                       </button>
-                    )}
-                  </td>
-                  <td className="px-4 py-3 border-b">
-                    {strategy.result && strategy.status === 'completed' ? (
-                      <button
-                        onClick={() => setShowResult(strategy.result)}
-                        className="text-indigo-600 hover:text-indigo-800 text-xs"
-                      >
-                        View
-                      </button>
-                    ) : (
-                      <span className="text-gray-400 text-xs">-</span>
-                    )}
-                  </td>
-                  <td className="px-4 py-3 border-b">
-                    <button
-                      onClick={() => handleEdit(strategy.id)}
-                      className="text-blue-600 hover:text-blue-800 text-xs"
-                    >
-                      Edit
-                    </button>
-                  </td>
-                  <td className="px-4 py-3 border-b">
-                    <button
-                      onClick={() => handleDelete(strategy.id)}
-                      className="text-red-600 hover:text-red-800 text-xs"
-                    >
-                      Delete
-                    </button>
-                  </td>
-                </tr>
-              ))}
+                    </td>
+                  </tr>
+                );
+              })}
+
               {strategies.length === 0 && (
                 <tr>
                   <td colSpan="7" className="text-center py-6 text-gray-500">
@@ -212,27 +228,10 @@ export default function Strategies() {
         )}
 
         {showResult && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm">
-            <div className="relative bg-white rounded-xl shadow-2xl w-full max-w-md p-6">
-              <button
-                onClick={() => setShowResult(null)}
-                className="absolute top-3 right-3 text-gray-500 hover:text-gray-800 text-2xl font-bold"
-                aria-label="Close"
-              >
-                &times;
-              </button>
-              <h3 className="text-xl font-bold text-teal-700 mb-4 text-center">Simulation Result</h3>
-              <p className="text-gray-700 mb-2">
-                <strong>Summary:</strong> {showResult.summary}
-              </p>
-              <p className="text-gray-700 mb-2">
-                <strong>PnL:</strong> {showResult.pnl}
-              </p>
-              <p className="text-gray-700 mb-2">
-                <strong>Trades:</strong> {showResult.trades}
-              </p>
-            </div>
-          </div>
+          <StrategyResultModal
+            result={showResult}
+            onClose={() => setShowResult(null)}
+          />
         )}
       </div>
     </div>

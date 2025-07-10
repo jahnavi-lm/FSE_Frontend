@@ -1,189 +1,222 @@
-import { useState, useEffect } from 'react';
-import { strategyTypes, strategyFieldSchema } from '../../../Data/strategyFields';
+import { useState, useEffect } from "react";
+import CodeMirror from "@uiw/react-codemirror";
+import { javascript } from "@codemirror/lang-javascript";
+
+const INDICES = ["NIFTY 50", "NIFTY NEXT 50"];
+const COMPANIES = [
+  "HDFCBANK.NS", "ICICIBANK.NS", "RELIANCE.NS", "TCS.NS", "BHARTIARTL.NS", "INFY.NS", "BAJFINANCE.NS", "HINDUNILVR.NS", "ITC.NS",
+  "LT.NS", "HCLTECH.NS", "KOTAKBANK.NS", "ULTRACEMCO.NS", "AXISBANK.NS", "TITAN.NS", "NTPC.NS", "ASIANPAINT.NS", "NESTLEIND.NS", "SBIN.NS",
+  "SUNPHARMA.NS", "MARUTI.NS", "M&M.NS", "JSWSTEEL.NS", "TATAMOTORS.NS", "TATASTEEL.NS", "TECHM.NS", "WIPRO.NS", "ADANIENT.NS",
+  "ADANIPORTS.NS", "COALINDIA.NS", "POWERGRID.NS", "DRREDDY.NS", "CIPLA.NS", "EICHERMOT.NS", "HEROMOTOCO.NS", "HINDALCO.NS", "INDUSINDBK.NS",
+  "SHREECEM.NS", "BPCL.NS", "ONGC.NS", "GRASIM.NS", "IOC.NS", "HDFCLIFE.NS", "SBILIFE.NS", "BAJAJ-AUTO.NS", "BAJAJFINSV.NS",
+  "BRITANNIA.NS", "HDFC.NS", "UPL.NS", "BOSCHLTD.NS", "ABB.NS", "APOLLOHOSP.NS", "AMBUJACEM.NS", "ADANIGREEN.NS", "BIOCON.NS",
+  "BEL.NS", "BANKBARODA.NS", "BANDHANBNK.NS", "CANBK.NS", "CHOLAFIN.NS", "COLPAL.NS", "DABUR.NS", "DLF.NS", "GODREJCP.NS", "GAIL.NS",
+  "HAVELLS.NS", "ICICIPRULI.NS", "INDIGO.NS", "LTIM.NS", "LTTS.NS", "L&TFH.NS", "LICI.NS", "MCDOWELL-N.NS", "MFSL.NS", "MUTHOOTFIN.NS",
+  "NAUKRI.NS", "NHPC.NS", "NMDC.NS", "OFSS.NS", "PAGEIND.NS", "PETRONET.NS", "PIDILITIND.NS", "PIIND.NS", "PFC.NS", "RECLTD.NS",
+  "SAIL.NS", "SIEMENS.NS", "SRF.NS", "TORNTPHARM.NS", "TRENT.NS", "TVSMOTOR.NS", "UBL.NS", "VOLTAS.NS", "ZYDUSLIFE.NS",
+  "AUROPHARMA.NS", "ALKEM.NS", "INDUSTOWER.NS", "IOCL.NS", "JINDALSTEL.NS"
+];
 
 export default function StrategiesForm({ onSave, onCancel, initialValues }) {
-  const [type, setType] = useState('');
-  const [formValues, setFormValues] = useState({});
+  const [form, setForm] = useState({
+    strategyName: "",
+    strategyScript: "",
+    symbolList: [],
+    startDate: "",
+    endDate: "",
+    initialCapital: "", 
+    symbol: ""
+  });
+  const [dropdownVisible, setDropdownVisible] = useState(false);
 
   useEffect(() => {
     if (initialValues) {
-      setType(initialValues.type || '');
-      let params = {};
+      let parsedParams = {};
       try {
-        params = initialValues.parametersJson ? JSON.parse(initialValues.parametersJson) : {};
+        parsedParams = initialValues.parametersJson ? JSON.parse(initialValues.parametersJson) : {};
       } catch (e) {
         console.error('Invalid JSON in parametersJson:', e);
       }
-      setFormValues({
-        name: initialValues.name || '',
-        capitalAllocation: initialValues.capitalAllocation || '',
-        ...params,
+
+      setForm({
+        strategyName: initialValues.strategyName || "",
+        strategyScript: initialValues.strategyScript || "",
+        symbolList: initialValues.symbolList || [],
+        startDate: initialValues.startDate || "",
+        endDate: initialValues.endDate || "",
+        initialCapital: initialValues.initialCapital || "",
+        symbol: initialValues.symbol || ""
       });
-    }    
+    }
   }, [initialValues]);
 
   const handleChange = (e) => {
-    setFormValues({ ...formValues, [e.target.name]: e.target.value });
+    const { name, value } = e.target;
+    setForm((prev) => ({ ...prev, [name]: value }));
+  };
+
+  const toggleSymbol = (symbol) => {
+    setForm((prev) => ({
+      ...prev,
+      symbolList: prev.symbolList.includes(symbol)
+        ? prev.symbolList.filter((s) => s !== symbol)
+        : [...prev.symbolList, symbol],
+    }));
+  };
+
+  const removeSymbol = (symbol) => {
+    setForm((prev) => ({
+      ...prev,
+      symbolList: prev.symbolList.filter((s) => s !== symbol),
+    }));
   };
 
   const handleSubmit = (e) => {
     e.preventDefault();
-
-    const { name, capitalAllocation, ...parameterFields } = formValues;
-
+  
     const newStrategy = {
       ...(initialValues?.id ? { id: initialValues.id } : {}),
-      name,
-      type,
-      capitalAllocation: parseFloat(capitalAllocation),
-      parametersJson: JSON.stringify(parameterFields),
+      strategyName: form.strategyName,
+      strategyScript: form.strategyScript,
+      symbolList: form.symbolList,
+      startDate: form.startDate,
+      endDate: form.endDate,
+      initialCapital: parseFloat(form.initialCapital || 0),
+      symbol: form.symbol,
+      status: "not started",
+      resultJson: null
     };
 
     onSave(newStrategy);
   };
-
-  const commonFields = strategyFieldSchema.common;
-  const typeSpecificFields = type ? strategyFieldSchema[type] || [] : [];
-
-  const exitStrategyValue = formValues.exitStrategy || '';
-  let conditionalFields = [];
-
-  const exitField = typeSpecificFields.find(f => f.name === 'exitStrategy');
-  if (exitField?.conditionalFields && exitField.conditionalFields[exitStrategyValue]) {
-    conditionalFields = exitField.conditionalFields[exitStrategyValue];
-  }
+  
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm">
-      <div className="relative bg-white rounded-xl shadow-2xl w-full max-w-3xl max-h-[90vh] overflow-y-auto p-6">
-        <button
-          onClick={onCancel}
-          className="absolute top-3 right-3 text-gray-500 hover:text-gray-800 text-2xl font-bold"
-          aria-label="Close"
-        >
-          &times;
-        </button>
+    <form onSubmit={handleSubmit} className="space-y-6">
+      <h2 className="text-2xl font-bold text-teal-700 text-center mb-4">
+        {initialValues ? 'Edit Strategy' : 'Create New Strategy'}
+      </h2>
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div className="flex flex-col gap-4">
+          <label className="text-sm font-medium text-gray-700">Strategy Name</label>
+          <input
+            className="border p-2 rounded-lg shadow-sm"
+            type="text"
+            name="strategyName"
+            value={form.strategyName}
+            onChange={handleChange}
+            required
+          />
 
-        <h3 className="text-2xl font-bold text-teal-700 mb-4 text-center">
-          {initialValues ? 'Edit Strategy' : 'Create New Strategy'}
-        </h3>
-
-        <form onSubmit={handleSubmit} className="space-y-6">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div>
-              <label className="block mb-2 text-sm font-medium text-gray-700">
-                Type <span className="text-red-500">*</span>
-              </label>
-              <select
-                name="type"
-                value={type}
-                onChange={(e) => {
-                  setType(e.target.value);
-                  setFormValues((prev) => ({
-                    ...prev,
-                    type: e.target.value,
-                    exitStrategy: '',
-                  }));
-                }}
-                required
-                disabled={!!initialValues}
-                className="w-full border border-gray-300 p-3 rounded-lg focus:ring-teal-500 focus:outline-none"
-              >
-                <option value="">Select Strategy Type</option>
-                {strategyTypes.map((t) => (
-                  <option key={t} value={t}>{t}</option>
-                ))}
-              </select>
+          <label className="text-sm font-medium text-gray-700">Select Symbols</label>
+          <div className="relative">
+            <div
+              className="border p-2 rounded-lg shadow-sm bg-white cursor-pointer"
+              onClick={() => setDropdownVisible(!dropdownVisible)}
+            >
+              {form.symbolList.length > 0 ? `${form.symbolList.length} selected` : 'Click to Select...'}
             </div>
-
-            {commonFields.map((field) => (
-              <div key={field.name}>
-                <label className="block mb-2 text-sm font-medium text-gray-700">
-                  {field.label} <span className="text-red-500">*</span>
-                </label>
-                <input
-                  type={field.type}
-                  name={field.name}
-                  value={formValues[field.name] || ''}
-                  onChange={handleChange}
-                  required
-                  className="w-full border border-gray-300 p-3 rounded-lg focus:ring-teal-500 focus:outline-none"
-                />
+            {dropdownVisible && (
+              <div className="absolute z-10 w-full bg-white border mt-1 rounded shadow-lg max-h-60 overflow-y-auto p-2 space-y-2">
+                <div>
+                  <div className="text-gray-600 font-semibold mb-1">Indices</div>
+                  {INDICES.map((symbol) => (
+                    <label key={symbol} className="flex items-center space-x-2 hover:bg-blue-50 p-1 rounded">
+                      <input
+                        type="checkbox"
+                        checked={form.symbolList.includes(symbol)}
+                        onChange={() => toggleSymbol(symbol)}
+                      />
+                      <span>{symbol}</span>
+                    </label>
+                  ))}
+                </div>
+                <div>
+                  <div className="text-gray-600 font-semibold mb-1 mt-2">Stocks</div>
+                  {COMPANIES.map((symbol) => (
+                    <label key={symbol} className="flex items-center space-x-2 hover:bg-blue-50 p-1 rounded">
+                      <input
+                        type="checkbox"
+                        checked={form.symbolList.includes(symbol)}
+                        onChange={() => toggleSymbol(symbol)}
+                      />
+                      <span>{symbol}</span>
+                    </label>
+                  ))}
+                </div>
               </div>
+            )}
+          </div>
+
+          <div className="flex flex-wrap gap-2 mt-2">
+            {form.symbolList.map((symbol) => (
+              <span
+                key={symbol}
+                className="bg-blue-100 text-blue-700 px-3 py-1 rounded-full text-sm flex items-center"
+              >
+                {symbol}
+                <button
+                  type="button"
+                  className="ml-2 text-red-600 hover:text-red-800"
+                  onClick={() => removeSymbol(symbol)}
+                >
+                  ×
+                </button>
+              </span>
             ))}
           </div>
 
-          {type && typeSpecificFields.length > 0 && (
-            <>
-              <hr className="border-gray-200 my-4" />
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                {typeSpecificFields.map((field) => (
-                  <div key={field.name}>
-                    <label className="block mb-2 text-sm font-medium text-gray-700">
-                      {field.label} <span className="text-red-500">*</span>
-                    </label>
-                    {field.type === 'dropdown' ? (
-                      <select
-                        name={field.name}
-                        value={formValues[field.name] || ''}
-                        onChange={handleChange}
-                        required
-                        className="w-full border border-gray-300 p-3 rounded-lg focus:ring-teal-500 focus:outline-none"
-                      >
-                        <option value="">Select</option>
-                        {field.options.map((opt) => (
-                          <option key={opt} value={opt}>{opt}</option>
-                        ))}
-                      </select>
-                    ) : (
-                      <input
-                        type={field.type}
-                        name={field.name}
-                        value={formValues[field.name] || ''}
-                        onChange={handleChange}
-                        required
-                        className="w-full border border-gray-300 p-3 rounded-lg focus:ring-teal-500 focus:outline-none"
-                      />
-                    )}
-                  </div>
-                ))}
-              </div>
-            </>
-          )}
+          <label className="text-sm font-medium text-gray-700">Start Date</label>
+          <input
+            className="border p-2 rounded-lg shadow-sm"
+            type="date"
+            name="startDate"
+            value={form.startDate}
+            onChange={handleChange}
+          />
 
-          {conditionalFields.length > 0 && (
-            <>
-              <hr className="border-gray-200 my-4" />
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                {conditionalFields.map((field) => (
-                  <div key={field.name}>
-                    <label className="block mb-2 text-sm font-medium text-gray-700">
-                      {field.label} <span className="text-red-500">*</span>
-                    </label>
-                    <input
-                      type={field.type}
-                      name={field.name}
-                      value={formValues[field.name] || ''}
-                      onChange={handleChange}
-                      required
-                      className="w-full border border-gray-300 p-3 rounded-lg focus:ring-teal-500 focus:outline-none"
-                    />
-                  </div>
-                ))}
-              </div>
-            </>
-          )}
+          <label className="text-sm font-medium text-gray-700">End Date</label>
+          <input
+            className="border p-2 rounded-lg shadow-sm"
+            type="date"
+            name="endDate"
+            value={form.endDate}
+            onChange={handleChange}
+          />
+        </div>
 
-          <div className="flex justify-end mt-6">
-            <button
-              type="submit"
-              className="bg-teal-600 text-white px-4 py-2 rounded hover:bg-teal-700 transition"
-            >
-              {initialValues ? 'Update Strategy' : 'Save Strategy'}
-            </button>
+        <div className="flex flex-col gap-4">
+          <label className="text-sm font-medium text-gray-700">Strategy Script</label>
+          <div className="h-64 border rounded-lg overflow-hidden bg-gray-50">
+            <CodeMirror
+              value={form.strategyScript}
+              height="100%"
+              theme="light"
+              extensions={[javascript()]}
+              onChange={(value) =>
+                setForm((prev) => ({ ...prev, strategyScript: value }))
+              }
+              basicSetup={{ lineNumbers: true }}
+            />
           </div>
-        </form>
+        </div>
       </div>
-    </div>
+
+      <div className="flex justify-end mt-6">
+        <button
+          type="submit"
+          className="bg-teal-600 text-white px-4 py-2 rounded hover:bg-teal-700 transition"
+        >
+          {initialValues ? 'Update Strategy' : 'Save Strategy'}
+        </button>
+        <button
+          type="button"
+          onClick={onCancel}
+          className="ml-4 text-gray-600 hover:text-gray-800 px-4 py-2 rounded border border-gray-300 transition"
+        >
+          Cancel
+        </button>
+      </div>
+    </form>
   );
 }
