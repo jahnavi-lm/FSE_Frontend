@@ -36,7 +36,7 @@ const router = createBrowserRouter([
       </PublicRoute>
     ),
   },
-    { path: "/dashboard/fund-manager", element: <FundManagerDashboard /> },
+
   {
     path: "/register",
     element: (
@@ -63,7 +63,7 @@ const router = createBrowserRouter([
       {
         element: <HeaderFooterLayout />,
         children: [
-        
+          { path: "/dashboard/fund-manager", element: <FundManagerDashboard /> },
           { path: "/dashboard/investor", element: <InvestorHome /> },
           { path: "/dashboard/my-account", element: <MyAccount /> },
           { path: "/dashboard/amc", element: <AmcDashboard /> },

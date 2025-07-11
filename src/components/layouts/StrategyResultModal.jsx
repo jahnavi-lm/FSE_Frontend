@@ -35,6 +35,68 @@ export default function StrategyResultModal({
     },
   };
 
+  const trades = result.trades ?? [];
+
+  const mergedSeries = [
+    {
+      name: "Closing Balance",
+      type: "line",
+      data: trades.map((t) => ({ x: new Date(t.date).getTime(), y: t.closingBalance })),
+    },
+    {
+      name: "Realized Profit",
+      type: "column",
+      data: trades.map((t) => ({ x: new Date(t.date).getTime(), y: t.realizedProfit })),
+    },
+    {
+      name: "BUY",
+      type: "scatter",
+      data: trades.filter((t) => t.action === "BUY").map((t) => ({ x: new Date(t.date).getTime(), y: t.price })),
+    },
+    {
+      name: "SELL",
+      type: "scatter",
+      data: trades.filter((t) => t.action === "SELL").map((t) => ({ x: new Date(t.date).getTime(), y: t.price })),
+    },
+  ];
+
+  const mergedOptions = {
+    chart: {
+      height: 400,
+      type: "line",
+      stacked: false,
+      zoom: { enabled: true },
+    },
+    dataLabels: { enabled: false },
+    stroke: { width: [2, 0, 0, 0], curve: "smooth" },
+    markers: { size: [0, 0, 6, 6] },
+    xaxis: { type: "datetime" },
+    yaxis: [{
+      labels: { formatter: (val) => `₹${val.toFixed(2)}` },
+    }],
+    plotOptions: {
+      bar: {
+        columnWidth: '50%',
+        colors: {
+          ranges: [
+            { from: -10000, to: 0, color: "#f87171" },
+            { from: 0, to: 10000, color: "#4ade80" },
+          ],
+        },
+      },
+    },
+    colors: ["#3b82f6", "#10b981", "#6366f1", "#ef4444"],
+    title: {
+      text: "Combined View: Closing Balance, Realized Profit, Buy & Sell",
+      align: "left",
+    },
+    tooltip: {
+      shared: true,
+      intersect: false,
+      x: { format: "dd MMM yyyy" },
+    },
+  };
+
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm">
       <div className="relative bg-white rounded-xl shadow-2xl w-full max-w-5xl max-h-[90vh] overflow-y-auto p-6">
@@ -71,7 +133,7 @@ export default function StrategyResultModal({
           </div>
         </div>
 
-        {/* Chart Section */}
+        {/* Candlestick Chart Section */}
         {companyCandleMap && Object.keys(companyCandleMap).length > 0 && (
           <>
             <div className="mb-4 flex gap-4 items-center">
@@ -103,7 +165,19 @@ export default function StrategyResultModal({
           </>
         )}
 
-        {/* Trades Table — (already correct) */}
+        {/* Merged Chart Section */}
+        {trades.length > 0 && (
+          <div className="mt-10">
+            <ReactApexChart
+              options={mergedOptions}
+              series={mergedSeries}
+              type="line"
+              height={400}
+            />
+          </div>
+        )}
+
+        {/* Trades Table */}
         <h3 className="text-lg font-semibold mt-8 mb-4">Trades Table</h3>
         <div className="overflow-x-auto border rounded-lg shadow">
           <table className="table-auto w-full text-sm border">
@@ -122,13 +196,15 @@ export default function StrategyResultModal({
               </tr>
             </thead>
             <tbody>
-              {result.trades?.length ? (
-                result.trades.map((trade, index) => (
+              {trades.length ? (
+                trades.map((trade, index) => (
                   <tr key={index} className="text-center">
                     <td className="p-2">{trade.date}</td>
                     <td
                       className={`p-2 font-bold ${
-                        trade.action === "BUY" ? "text-green-600" : "text-red-600"
+                        trade.action === "BUY"
+                          ? "text-green-600"
+                          : "text-red-600"
                       }`}
                     >
                       {trade.action}
@@ -136,9 +212,15 @@ export default function StrategyResultModal({
                     <td className="p-2">₹{trade.price?.toFixed(2) ?? "—"}</td>
                     <td className="p-2">{trade.symbol ?? "—"}</td>
                     <td className="p-2">{trade.quantity ?? "—"}</td>
-                    <td className="p-2">₹{trade.totalCostPrice?.toFixed(2) ?? "—"}</td>
-                    <td className="p-2">₹{trade.openingBalance?.toFixed(2) ?? "—"}</td>
-                    <td className="p-2">₹{trade.closingBalance?.toFixed(2) ?? "—"}</td>
+                    <td className="p-2">
+                      ₹{trade.totalCostPrice?.toFixed(2) ?? "—"}
+                    </td>
+                    <td className="p-2">
+                      ₹{trade.openingBalance?.toFixed(2) ?? "—"}
+                    </td>
+                    <td className="p-2">
+                      ₹{trade.closingBalance?.toFixed(2) ?? "—"}
+                    </td>
                     <td className="p-2">₹{trade.price?.toFixed(2) ?? "—"}</td>
                     <td
                       className={`p-2 font-bold ${
