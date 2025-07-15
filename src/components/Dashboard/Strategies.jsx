@@ -465,8 +465,8 @@
 //     </div>
 //   );
 // }
-
 import { useState, useEffect } from 'react';
+import toast from "react-hot-toast";
 import StrategiesForm from "./StrategiesForm";
 import StrategyResultModal from "../layouts/StrategyResultModal";
 import {
@@ -483,6 +483,7 @@ export default function Strategies() {
   const [showForm, setShowForm] = useState(false);
   const [editingStrategy, setEditingStrategy] = useState(null);
   const [showResult, setShowResult] = useState(null);
+  const [runningSimulations, setRunningSimulations] = useState({});
 
   useEffect(() => {
     loadStrategies();
@@ -533,15 +534,32 @@ export default function Strategies() {
     }
   };
 
-  const handleStartSimulation = async (id) => {
-    try {
-      const response = await startSimulation(id);
-      console.log("✅ Backend Start Simulation Response:", response.data);
-      await loadStrategies();
-    } catch (error) {
-      console.error("❌ Error starting simulation:", error);
-    }
-  };
+const handleStartSimulation = async (id) => {
+  try {
+    setRunningSimulations(prev => ({ ...prev, [id]: true }));
+
+    // Show loading toast and save its ID
+    const toastId = toast.loading("Running simulation...", { duration: Infinity });
+
+    await startSimulation(id);
+
+    await loadStrategies();
+
+    toast.dismiss(toastId); // remove the loading toast
+    toast.success("Simulation completed successfully!", { duration: 5000 });
+  } catch (error) {
+    toast.dismiss(); // dismiss all toasts in case of error
+    toast.error("Failed to start simulation.");
+    console.error("❌ Error starting simulation:", error);
+  } finally {
+    setRunningSimulations(prev => {
+      const newState = { ...prev };
+      delete newState[id];
+      return newState;
+    });
+  }
+};
+
 
   const handleStopSimulation = async (id) => {
     try {
@@ -621,10 +639,10 @@ export default function Strategies() {
                       ) : (
                         <button
                           onClick={() => handleStartSimulation(strategy.id)}
-                          className="px-3 py-1 bg-teal-600 text-white rounded hover:bg-teal-700 transition text-xs"
-                          disabled={strategy.status === 'completed'}
+                          className="px-3 py-1 bg-teal-600 text-white rounded transition text-xs disabled:opacity-50"
+                          disabled={strategy.status === 'completed' || runningSimulations[strategy.id]}
                         >
-                          Start
+                          {runningSimulations[strategy.id] ? "Running..." : "Start"}
                         </button>
                       )}
                     </td>

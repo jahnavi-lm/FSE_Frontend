@@ -4,6 +4,15 @@ import ReactApexChart from "react-apexcharts";
 import CodeMirror from "@uiw/react-codemirror";
 import { javascript } from "@codemirror/lang-javascript";
 import toast from "react-hot-toast"; // ✅ Imported toast
+import {
+  LineChart,
+  Line,
+  XAxis,
+  YAxis,
+  Tooltip,
+  ResponsiveContainer,
+} from "recharts";
+
 
 const INDICES = ["NIFTY 50", "NIFTY NEXT 50"];
 const COMPANIES = [
@@ -71,20 +80,41 @@ export default function StrategyBacktestApp() {
     setForm((prev) => ({ ...prev, [name]: value }));
   };
 
-  const handleSelectSymbol = (symbol) => {
+  // const handleSelectSymbol = (symbol) => {
+  //   if (INDICES.includes(symbol)) {
+  //     setForm((prev) => ({ ...prev, symbolList: [symbol] }));
+  //     setSelectedIndex(symbol);
+  //   } else {
+  //     if (!selectedIndex && !form.symbolList.includes(symbol)) {
+  //       setForm((prev) => ({
+  //         ...prev,
+  //         symbolList: [...prev.symbolList, symbol],
+  //       }));
+  //     }
+  //   }
+  //   setDropdownVisible(false);
+  // };
+  const toggleSymbol = (symbol) => {
+  if (form.symbolList.includes(symbol)) {
+    removeSymbol(symbol);
+  } else {
     if (INDICES.includes(symbol)) {
-      setForm((prev) => ({ ...prev, symbolList: [symbol] }));
+      // If index is selected, clear stocks and allow only one index
+      setForm((prev) => ({
+        ...prev,
+        symbolList: [symbol],
+      }));
       setSelectedIndex(symbol);
-    } else {
-      if (!selectedIndex && !form.symbolList.includes(symbol)) {
-        setForm((prev) => ({
-          ...prev,
-          symbolList: [...prev.symbolList, symbol],
-        }));
-      }
+    } else if (!selectedIndex) {
+      // Allow multiple stocks only if no index is selected
+      setForm((prev) => ({
+        ...prev,
+        symbolList: [...prev.symbolList, symbol],
+      }));
     }
-    setDropdownVisible(false);
-  };
+  }
+};
+
 
   const removeSymbol = (symbol) => {
     setForm((prev) => ({
@@ -147,7 +177,7 @@ const handleSubmit = async () => {
                 onChange={handleChange}
                 placeholder="Strategy Name"
               />
-              <label className="text-sm font-medium text-gray-700">Select Index or Stocks</label>
+              {/* <label className="text-sm font-medium text-gray-700">Select Index or Stocks</label>
               <div className="relative">
                 <div
                   className="border p-2 rounded-lg shadow-sm bg-white cursor-pointer"
@@ -183,7 +213,47 @@ const handleSubmit = async () => {
                     ))}
                   </div>
                 )}
+              </div> */}
+
+                        <label className="text-sm font-medium text-gray-700">Select Symbols</label>
+          <div className="relative">
+            <div
+              className="border p-2 rounded-lg shadow-sm bg-white cursor-pointer"
+              onClick={() => setDropdownVisible(!dropdownVisible)}
+            >
+              {form.symbolList.length > 0 ? `${form.symbolList.length} selected` : 'Click to Select...'}
+            </div>
+            {dropdownVisible && (
+              <div className="absolute z-10 w-full bg-white border mt-1 rounded shadow-lg max-h-60 overflow-y-auto p-2 space-y-2">
+                <div>
+                  <div className="text-gray-600 font-semibold mb-1">Indices</div>
+                  {INDICES.map((symbol) => (
+                    <label key={symbol} className="flex items-center space-x-2 hover:bg-blue-50 p-1 rounded">
+                      <input
+                        type="checkbox"
+                        checked={form.symbolList.includes(symbol)}
+                        onChange={() => toggleSymbol(symbol)}
+                      />
+                      <span>{symbol}</span>
+                    </label>
+                  ))}
+                </div>
+                <div>
+                  <div className="text-gray-600 font-semibold mb-1 mt-2">Stocks</div>
+                  {COMPANIES.map((symbol) => (
+                    <label key={symbol} className="flex items-center space-x-2 hover:bg-blue-50 p-1 rounded">
+                      <input
+                        type="checkbox"
+                        checked={form.symbolList.includes(symbol)}
+                        onChange={() => toggleSymbol(symbol)}
+                      />
+                      <span>{symbol}</span>
+                    </label>
+                  ))}
+                </div>
               </div>
+            )}
+          </div>
               <div className="flex flex-wrap gap-2 mt-2">
                 {form.symbolList.map((symbol) => (
                   <span
@@ -240,6 +310,75 @@ const handleSubmit = async () => {
               </button>
             </div>
           </div>
+
+          {/* {result.trades && result.trades.length > 0 && (
+  <>
+    <h3 className="text-lg font-semibold mt-8 mb-2">Equity Over Time</h3>
+    <ReactApexChart
+      options={{
+        chart: { id: "equity-line", type: "line" },
+        xaxis: { type: "datetime" },
+        yaxis: {
+          labels: { formatter: (val) => `₹${val.toFixed(0)}` },
+          title: { text: "Equity (INR)" }
+        },
+        tooltip: {
+          x: { format: "dd MMM yyyy" },
+          y: { formatter: (val) => `₹${val.toFixed(2)}` }
+        },
+      }}
+      series={[
+        {
+          name: "Closing Balance",
+          data: result.trades.map((trade) => ({
+            x: new Date(trade.date).getTime(),
+            y: trade.closingBalance,
+          })),
+        },
+      ]}
+      type="line"
+      height={300}
+    />
+  </>
+)} */}
+
+{result && (
+  <div className="mt-10 bg-white border border-gray-200 rounded-xl p-6 shadow-sm">
+    <div className="flex justify-between items-center mb-4">
+      <h3 className="text-base font-semibold text-gray-700">
+        📈 Equity Over Time
+      </h3>
+    </div>
+    <ResponsiveContainer width="100%" height={300}>
+      <LineChart
+        data={result.trades.map((trade) => ({
+          date: new Date(trade.date).toLocaleDateString(),
+          equity: trade.closingBalance,
+        }))}
+        margin={{ top: 5, right: 20, bottom: 5, left: 0 }}
+      >
+        <XAxis dataKey="date" tick={{ fontSize: 12 }} />
+        <YAxis
+          tick={{ fontSize: 12 }}
+          tickFormatter={(val) => `₹${val.toFixed(0)}`}
+        />
+        <Tooltip
+          formatter={(value) => [`₹${value.toFixed(2)}`, "Equity"]}
+          contentStyle={{ fontSize: "12px" }}
+        />
+        <Line
+          type="monotone"
+          dataKey="equity"
+          stroke="#14b8a6"
+          strokeWidth={2}
+          activeDot={{ r: 4 }}
+        />
+      </LineChart>
+    </ResponsiveContainer>
+  </div>
+)}
+
+
 
           {result && (
             <div className="mt-10">
