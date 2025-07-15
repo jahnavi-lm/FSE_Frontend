@@ -1,16 +1,46 @@
+import React, { useState, useMemo } from "react";
 import ReactApexChart from "react-apexcharts";
 
-export default function StrategyResultModal({
-  result,
-  onClose,
-  candleSeries,
-  companyCandleMap,
-  selectedCompany,
-  setSelectedCompany,
-  setCandleSeries,
-}) {
+export default function StrategyResultModal({ result, onClose, companyCandleMap }) {
+  const [selectedCompany, setSelectedCompany] = useState("All");
+  const [candleSeries, setCandleSeries] = useState([]);
+
   if (!result) return null;
 
+  const trades = result.trades ?? [];
+  const allSymbols = Array.from(new Set(trades.map((t) => t.symbol)));
+
+  const dropdownOptions = ["All", ...allSymbols];
+
+  // Filter trades by selected company
+  const filteredTrades = useMemo(() => {
+    if (selectedCompany === "All") return trades;
+    return trades.filter((t) => t.symbol === selectedCompany);
+  }, [selectedCompany, trades]);
+
+  // Per-company metrics
+  const initialEquityPerCompany = filteredTrades
+    .filter((t) => t.action === "BUY")
+    .reduce((sum, t) => sum + (t.totalCostPrice || 0), 0);
+
+  const realizedProfitPerCompany = filteredTrades
+    .filter((t) => t.action === "SELL")
+    .reduce((sum, t) => sum + (t.realizedProfit || 0), 0);
+
+  const finalEquityPerCompany = initialEquityPerCompany + realizedProfitPerCompany;
+  const totalTradesPerCompany = filteredTrades.length;
+
+  // Dropdown change handler
+  const handleCompanyChange = (selected) => {
+    setSelectedCompany(selected);
+    if (selected === "All") {
+      setCandleSeries([]);
+    } else if (companyCandleMap && companyCandleMap[selected]) {
+      setCandleSeries(companyCandleMap[selected]);
+    }
+  };
+
+  // Chart Options
   const candleOptions = {
     chart: { type: "candlestick", height: 350 },
     title: { text: "CandleStick Chart", align: "left" },
@@ -19,44 +49,44 @@ export default function StrategyResultModal({
       tooltip: { enabled: true },
       labels: { formatter: (val) => val.toFixed(2) },
     },
-    tooltip: {
-      custom: ({ series, seriesIndex, dataPointIndex, w }) => {
-        const ohlc = w.globals.initialSeries[seriesIndex].data[dataPointIndex].y;
-        const x = w.globals.initialSeries[seriesIndex].data[dataPointIndex].x;
-        return `
-<div style="padding: 10px; font-size: 13px;">
-<b>${new Date(x).toLocaleDateString()}</b><br/>
-<span>Open: ₹${ohlc[0].toFixed(2)}</span><br/>
-<span>High: ₹${ohlc[1].toFixed(2)}</span><br/>
-<span>Low: ₹${ohlc[2].toFixed(2)}</span><br/>
-<span>Close: ₹${ohlc[3].toFixed(2)}</span>
-</div>`;
-      },
-    },
   };
-
-  const trades = result.trades ?? [];
 
   const mergedSeries = [
     {
       name: "Closing Balance",
       type: "line",
-      data: trades.map((t) => ({ x: new Date(t.date).getTime(), y: t.closingBalance })),
+      data: filteredTrades.map((t) => ({
+        x: new Date(t.date).getTime(),
+        y: t.closingBalance,
+      })),
     },
     {
       name: "Realized Profit",
       type: "column",
-      data: trades.map((t) => ({ x: new Date(t.date).getTime(), y: t.realizedProfit })),
+      data: filteredTrades.map((t) => ({
+        x: new Date(t.date).getTime(),
+        y: t.realizedProfit,
+      })),
     },
     {
       name: "BUY",
       type: "scatter",
-      data: trades.filter((t) => t.action === "BUY").map((t) => ({ x: new Date(t.date).getTime(), y: t.price })),
+      data: filteredTrades
+        .filter((t) => t.action === "BUY")
+        .map((t) => ({
+          x: new Date(t.date).getTime(),
+          y: t.price,
+        })),
     },
     {
       name: "SELL",
       type: "scatter",
-      data: trades.filter((t) => t.action === "SELL").map((t) => ({ x: new Date(t.date).getTime(), y: t.price })),
+      data: filteredTrades
+        .filter((t) => t.action === "SELL")
+        .map((t) => ({
+          x: new Date(t.date).getTime(),
+          y: t.price,
+        })),
     },
   ];
 
@@ -87,7 +117,7 @@ export default function StrategyResultModal({
     },
     colors: ["#3b82f6", "#10b981", "#6366f1", "#ef4444"],
     title: {
-      text: "Combined View: Closing Balance, Realized Profit, Buy & Sell",
+      text: `Combined View${selectedCompany !== "All" ? ` for ${selectedCompany}` : ""}`,
       align: "left",
     },
     tooltip: {
@@ -112,61 +142,78 @@ export default function StrategyResultModal({
           Simulation Result
         </h2>
 
+        {/* Overall Stats (Always) */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
           <div className="bg-gray-100 p-4 rounded shadow text-center">
-            <div className="text-sm text-gray-500">Initial Equity</div>
+            <div className="text-sm text-gray-500">Overall Initial Equity</div>
             <div className="text-lg font-bold text-gray-800">
               ₹{result.initialEquity?.toFixed(2) ?? "—"}
             </div>
           </div>
           <div className="bg-gray-100 p-4 rounded shadow text-center">
-            <div className="text-sm text-gray-500">Final Equity</div>
+            <div className="text-sm text-gray-500">Overall Final Equity</div>
             <div className="text-lg font-bold text-gray-800">
               ₹{result.finalEquity?.toFixed(2) ?? "—"}
             </div>
           </div>
           <div className="bg-gray-100 p-4 rounded shadow text-center">
-            <div className="text-sm text-gray-500">Total Trades</div>
+            <div className="text-sm text-gray-500">Overall Total Trades</div>
             <div className="text-lg font-bold text-gray-800">
               {result.totalTrades ?? "—"}
             </div>
           </div>
         </div>
 
-        {/* Candlestick Chart Section */}
-        {companyCandleMap && Object.keys(companyCandleMap).length > 0 && (
-          <>
-            <div className="mb-4 flex gap-4 items-center">
-              <label className="text-gray-700 font-medium">
-                Select Company to View Chart:
-              </label>
-              <select
-                className="border px-4 py-2 rounded-lg shadow-sm"
-                value={selectedCompany}
-                onChange={(e) => {
-                  const selected = e.target.value;
-                  setSelectedCompany(selected);
-                  setCandleSeries(companyCandleMap[selected]);
-                }}
-              >
-                {Object.keys(companyCandleMap).map((symbol) => (
-                  <option key={symbol} value={symbol}>
-                    {symbol}
-                  </option>
-                ))}
-              </select>
+        {/* Dropdown */}
+        <div className="mb-4 flex gap-4 items-center">
+          <label className="text-gray-700 font-medium">Select Company:</label>
+          <select
+            className="border px-4 py-2 rounded-lg shadow-sm"
+            value={selectedCompany}
+            onChange={(e) => handleCompanyChange(e.target.value)}
+          >
+            {dropdownOptions.map((symbol) => (
+              <option key={symbol} value={symbol}>{symbol}</option>
+            ))}
+          </select>
+        </div>
+
+        {/* Company-Specific Stats */}
+        {selectedCompany !== "All" && (
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
+            <div className="bg-gray-100 p-4 rounded shadow text-center">
+              <div className="text-sm text-gray-500">Initial Equity ({selectedCompany})</div>
+              <div className="text-lg font-bold text-gray-800">
+                ₹{initialEquityPerCompany.toFixed(2)}
+              </div>
             </div>
-            <ReactApexChart
-              options={candleOptions}
-              series={candleSeries}
-              type="candlestick"
-              height={350}
-            />
-          </>
+            <div className="bg-gray-100 p-4 rounded shadow text-center">
+              <div className="text-sm text-gray-500">Final Equity ({selectedCompany})</div>
+              <div className="text-lg font-bold text-gray-800">
+                ₹{finalEquityPerCompany.toFixed(2)}
+              </div>
+            </div>
+            <div className="bg-gray-100 p-4 rounded shadow text-center">
+              <div className="text-sm text-gray-500">Total Trades ({selectedCompany})</div>
+              <div className="text-lg font-bold text-gray-800">
+                {totalTradesPerCompany}
+              </div>
+            </div>
+          </div>
         )}
 
-        {/* Merged Chart Section */}
-        {trades.length > 0 && (
+        {/* Candlestick Chart */}
+        {selectedCompany !== "All" && candleSeries?.length > 0 && (
+          <ReactApexChart
+            options={candleOptions}
+            series={candleSeries}
+            type="candlestick"
+            height={350}
+          />
+        )}
+
+        {/* Merged Chart */}
+        {filteredTrades.length > 0 && (
           <div className="mt-10">
             <ReactApexChart
               options={mergedOptions}
@@ -178,7 +225,9 @@ export default function StrategyResultModal({
         )}
 
         {/* Trades Table */}
-        <h3 className="text-lg font-semibold mt-8 mb-4">Trades Table</h3>
+        <h3 className="text-lg font-semibold mt-8 mb-4">
+          Trades Table {selectedCompany !== "All" && `(${selectedCompany})`}
+        </h3>
         <div className="overflow-x-auto border rounded-lg shadow">
           <table className="table-auto w-full text-sm border">
             <thead className="bg-gray-100">
@@ -196,41 +245,21 @@ export default function StrategyResultModal({
               </tr>
             </thead>
             <tbody>
-              {trades.length ? (
-                trades.map((trade, index) => (
+              {filteredTrades.length ? (
+                filteredTrades.map((trade, index) => (
                   <tr key={index} className="text-center">
                     <td className="p-2">{trade.date}</td>
-                    <td
-                      className={`p-2 font-bold ${
-                        trade.action === "BUY"
-                          ? "text-green-600"
-                          : "text-red-600"
-                      }`}
-                    >
+                    <td className={`p-2 font-bold ${trade.action === "BUY" ? "text-green-600" : "text-red-600"}`}>
                       {trade.action}
                     </td>
                     <td className="p-2">₹{trade.price?.toFixed(2) ?? "—"}</td>
                     <td className="p-2">{trade.symbol ?? "—"}</td>
                     <td className="p-2">{trade.quantity ?? "—"}</td>
-                    <td className="p-2">
-                      ₹{trade.totalCostPrice?.toFixed(2) ?? "—"}
-                    </td>
-                    <td className="p-2">
-                      ₹{trade.openingBalance?.toFixed(2) ?? "—"}
-                    </td>
-                    <td className="p-2">
-                      ₹{trade.closingBalance?.toFixed(2) ?? "—"}
-                    </td>
+                    <td className="p-2">₹{trade.totalCostPrice?.toFixed(2) ?? "—"}</td>
+                    <td className="p-2">₹{trade.openingBalance?.toFixed(2) ?? "—"}</td>
+                    <td className="p-2">₹{trade.closingBalance?.toFixed(2) ?? "—"}</td>
                     <td className="p-2">₹{trade.price?.toFixed(2) ?? "—"}</td>
-                    <td
-                      className={`p-2 font-bold ${
-                        trade.realizedProfit > 0
-                          ? "text-green-600"
-                          : trade.realizedProfit < 0
-                          ? "text-red-600"
-                          : "text-gray-600"
-                      }`}
-                    >
+                    <td className={`p-2 font-bold ${trade.realizedProfit > 0 ? "text-green-600" : trade.realizedProfit < 0 ? "text-red-600" : "text-gray-600"}`}>
                       ₹{trade.realizedProfit?.toFixed(2) ?? "—"}
                     </td>
                   </tr>

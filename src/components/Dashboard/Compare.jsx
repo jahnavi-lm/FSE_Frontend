@@ -12,6 +12,7 @@ import {
   Line,
 } from "recharts";
 import { getAllStrategies, getBacktestResult } from "../../api/strategiesApi";
+import { StrategyTradesTable } from "./StrategyTradesTable";
 
 export default function Compare() {
   const [allStrategies, setAllStrategies] = useState([]);
@@ -30,8 +31,6 @@ export default function Compare() {
         const data = res.data || [];
         const completed = data.filter((s) => s.status === "completed");
         setAllStrategies(completed);
-        if (completed.length > 0) setSelected1(completed[0].id);
-        if (completed.length > 1) setSelected2(completed[1].id);
       } catch (err) {
         console.error("Error fetching strategies:", err);
       } finally {
@@ -61,9 +60,9 @@ export default function Compare() {
           id: selected1,
           name: summaryData.strategyName,
           result: {
-            summary: parseResultJson(summaryData.resultJson),
+            initialEquity: resultData.initialEquity,
+            finalEquity: resultData.finalEquity,
             pnl: `₹${pnl}`,
-            trades: resultData.totalTrades,
           },
           full: {
             trades: resultData.trades || [],
@@ -95,9 +94,9 @@ export default function Compare() {
           id: selected2,
           name: summaryData.strategyName,
           result: {
-            summary: parseResultJson(summaryData.resultJson),
+            initialEquity: resultData.initialEquity,
+            finalEquity: resultData.finalEquity,
             pnl: `₹${pnl}`,
-            trades: resultData.totalTrades,
           },
           full: {
             trades: resultData.trades || [],
@@ -122,8 +121,8 @@ export default function Compare() {
   const tradesData = strategy1 && strategy2 ? [
     {
       metric: "Trades",
-      [strategy1.name]: strategy1.result.trades || 0,
-      [strategy2.name]: strategy2.result.trades || 0,
+      [strategy1.name]: strategy1.full.trades.length || 0,
+      [strategy2.name]: strategy2.full.trades.length || 0,
     },
   ] : [];
 
@@ -181,7 +180,11 @@ export default function Compare() {
                 >
                   <option value="">-- Select --</option>
                   {allStrategies.map((s) => (
-                    <option key={s.id} value={s.id}>
+                    <option
+                      key={s.id}
+                      value={s.id}
+                      disabled={(i === 1 && s.id === selected2) || (i === 2 && s.id === selected1)}
+                    >
                       {s.strategyName}
                     </option>
                   ))}
@@ -199,14 +202,23 @@ export default function Compare() {
                     className="flex-1 bg-blue-50 border border-blue-200 p-6 rounded-xl shadow-inner"
                   >
                     <h3 className="text-lg font-semibold text-blue-700 mb-3">{strategy.name}</h3>
-                    <p className="mb-2">
-                      <strong>Summary:</strong> {strategy.result.summary}
+                    <p className="mb-2 font-bold">
+                      Initial: ₹{strategy.result.initialEquity?.toFixed(2) ?? "—"}
                     </p>
-                    <p className="mb-2">
-                      <strong>PnL:</strong> {strategy.result.pnl}
+                    <p className="mb-2 font-bold">
+                      Final: ₹{strategy.result.finalEquity?.toFixed(2) ?? "—"}
                     </p>
-                    <p className="mb-2">
-                      <strong>Trades:</strong> {strategy.result.trades}
+                    <p className="mb-2 font-bold">
+                      Total Trades: {strategy.full.trades?.length ?? "—"}
+                    </p>
+                    <p
+                      className={`mb-2 font-bold ${
+                        parseFloat(strategy.result.pnl.replace(/[₹,]/g, "")) >= 0
+                          ? "text-green-600"
+                          : "text-red-600"
+                      }`}
+                    >
+                      PnL: {strategy.result.pnl}
                     </p>
                   </div>
                 )
@@ -291,67 +303,10 @@ export default function Compare() {
               </div>
 
               <div className="bg-white border border-gray-200 p-6 rounded-xl shadow-inner">
-                <h3 className="text-xl font-semibold text-gray-800 mb-4">All Trades Table</h3>
-                <div className="overflow-auto">
-                  <table className="min-w-full border-collapse">
-                    <thead>
-                      <tr className="bg-gray-50">
-                        <th className="border px-4 py-2 text-left">Strategy</th>
-                        <th className="border px-4 py-2 text-left">Date</th>
-                        <th className="border px-4 py-2 text-left">Action</th>
-                        <th className="border px-4 py-2 text-left">Symbol</th>
-                        <th className="border px-4 py-2 text-left">Price</th>
-                        <th className="border px-4 py-2 text-left">Quantity</th>
-                        <th className="border px-4 py-2 text-left">Total Cost Price</th>
-                        <th className="border px-4 py-2 text-left">Opening Balance</th>
-                        <th className="border px-4 py-2 text-left">Closing Balance</th>
-                        <th className="border px-4 py-2 text-left">NAV</th>
-                        <th className="border px-4 py-2 text-left">Realized Profit</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {[...(strategy1?.full?.trades || []), ...(strategy2?.full?.trades || [])].map(
-                        (trade, idx) => (
-                          <tr
-                            key={idx}
-                            className={`${idx % 2 === 0 ? "bg-gray-50" : ""} ${
-                              trade.action === "BUY"
-                                ? "bg-green-50"
-                                : trade.action === "SELL"
-                                ? "bg-red-50"
-                                : ""
-                            }`}
-                          >
-                            <td className="border px-4 py-2">
-                              {strategy1?.full?.trades?.includes(trade)
-                                ? strategy1.name
-                                : strategy2.name}
-                            </td>
-                            <td className="border px-4 py-2">{trade.date || "-"}</td>
-                            <td className="border px-4 py-2">{trade.action || "-"}</td>
-                            <td className="border px-4 py-2">{trade.symbol || "-"}</td>
-                            <td className="border px-4 py-2">{trade.price?.toFixed(2) || "-"}</td>
-                            <td className="border px-4 py-2">{trade.quantity || "-"}</td>
-                            <td className="border px-4 py-2">{trade.totalCostPrice?.toFixed(2) || "-"}</td>
-                            <td className="border px-4 py-2">{trade.openingBalance?.toFixed(2) || "-"}</td>
-                            <td className="border px-4 py-2">{trade.closingBalance?.toFixed(2) || "-"}</td>
-                            <td className="border px-4 py-2">{trade.nav?.toFixed(2) || "-"}</td>
-                            <td
-                              className={`border px-4 py-2 ${
-                                trade.realizedProfit > 0
-                                  ? "text-green-600"
-                                  : trade.realizedProfit < 0
-                                  ? "text-red-600"
-                                  : ""
-                              }`}
-                            >
-                              {trade.realizedProfit != null ? trade.realizedProfit.toFixed(2) : "-"}
-                            </td>
-                          </tr>
-                        )
-                      )}
-                    </tbody>
-                  </table>
+                <h3 className="text-xl font-semibold text-gray-800 mb-4">All Trades Comparison</h3>
+                <div className="flex flex-col lg:flex-row gap-6">
+                  <StrategyTradesTable strategy={strategy1} />
+                  <StrategyTradesTable strategy={strategy2} />
                 </div>
               </div>
             </>
