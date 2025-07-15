@@ -1,8 +1,7 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   FaMoneyBillWave,
   FaChartLine,
-  FaTools,
   FaLayerGroup,
 } from "react-icons/fa";
 import Strategies from "../../components/Dashboard/Strategies";
@@ -13,77 +12,96 @@ import Results from "../../components/Dashboard/Results";
 import ImportCandleData from "../../components/dashboard/ImportCandleData";
 import { initialResults } from "../../../Data/ResultsData";
 import BacktestYourScript from "./BacktestYourScript";
+import { fetchSchemesByManager } from "../../api/fundManagerApi";
+import PortfolioSummary from "../../components/Dashboard/ManagerPoertfolioSum";
+import ManagerInvest from "../../components/Dashboard/ManagerInvest";
 
 const FundManagerDashboard = () => {
   const [showValues, setShowValues] = useState(true);
   const [selectedTab, setSelectedTab] = useState("Overview");
   const [results, setResults] = useState(initialResults);
 
+  const [schemes, setSchemes] = useState([]);
+  const [selectedScheme, setSelectedScheme] = useState("");
+
+  const user = JSON.parse(localStorage.getItem("user"));
+  const fundManagerId = user?.id;
+
+  useEffect(() => {
+    const loadSchemes = async () => {
+      try {
+        const data = await fetchSchemesByManager(fundManagerId);
+        setSchemes(data);
+        if (data.length > 0) {
+          setSelectedScheme(data[0].schemeId);
+        }
+      } catch (error) {
+        console.error("Error fetching schemes:", error);
+      }
+    };
+
+    if (fundManagerId) {
+      loadSchemes();
+    }
+  }, [fundManagerId]);
+
   const managerData = {
     capital: 500000,
-    pnl: 82000,
+    pnl: "Loading..",
     strategies: 8,
     backtests: 15,
   };
 
-  const displayValue = (val) =>
-    showValues ? `₹${val.toLocaleString()}` : "****";
-
-  const tabs = ["Overview", "Strategies", "Compare", "Results", "Candle Data", "Backtest Your Script"];
+  const tabs = [
+    "Overview",
+    "Strategies",
+    "Compare",
+    "Results",
+    "Candle Data",
+    "Backtest Your Script",
+    "Invest",
+  ];
 
   return (
     <div className="max-w-7xl mx-auto px-6 py-6 min-h-screen">
-      {/* Header */}
-      <div className="flex items-center justify-between mb-6">
-        <h1 className="text-2xl font-bold text-gray-800">
-          Fund Manager Dashboard
-        </h1>
-        <button
-          onClick={() => setShowValues(!showValues)}
-          className="text-teal-600 hover:text-blue-600 text-2xl"
-        >
-          {showValues ? "🙈" : "👁️"}
-        </button>
+      {/* Fund Selector */}
+      <div className="bg-white border border-gray-200 p-6 rounded-xl shadow-sm mb-6">
+        <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+          <div className="w-full md:w-auto">
+            <h2 className="text-lg font-semibold text-gray-700 mb-2 md:mb-1">
+              🏦 Select Your Fund
+            </h2>
+           <select
+              value={selectedScheme}
+              onChange={(e) => setSelectedScheme(e.target.value)}
+              className="w-full md:w-72 px-4 py-2 border border-gray-300 rounded-lg shadow-sm text-sm focus:ring-2 focus:ring-teal-500 focus:outline-none"
+            >
+              <option value="" disabled>
+                -- Choose a Scheme --
+              </option>
+              {schemes.map((scheme, index) => (
+                <option key={scheme.id || index} value={scheme.schemeId}>
+                  {scheme.name || `Scheme ${index + 1}`}
+                </option>
+              ))}
+            </select>
+
+          </div>
+        </div>
       </div>
 
-      {/* Summary Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-6">
-        <div className="bg-blue-50 text-blue-800 shadow-sm rounded-xl p-5 border border-blue-200">
-          <div className="flex items-center gap-2 text-lg font-medium">
-            <FaMoneyBillWave />
-            <span>Total Capital</span>
-          </div>
-          <p className="text-2xl font-bold mt-2">
-            {displayValue(managerData.capital)}
-          </p>
+      {/* Portfolio Summary */}
+      {selectedScheme ? (
+        <PortfolioSummary
+          showValues={showValues}
+          toggleShowValues={() => setShowValues(!showValues)}
+          data={managerData} // Placeholder for API values in future
+        />
+      ) : (
+        <div className="bg-yellow-50 text-yellow-800 border border-yellow-200 rounded-xl p-4 mb-6 text-sm font-medium">
+          ⚠️ Please select a scheme to view portfolio summary.
         </div>
-
-        <div className="bg-green-50 text-green-800 shadow-sm rounded-xl p-5 border border-green-200">
-          <div className="flex items-center gap-2 text-lg font-medium">
-            <FaChartLine />
-            <span>Total P&L</span>
-          </div>
-          <p className="text-2xl font-bold mt-2">
-            {displayValue(managerData.pnl)}
-          </p>
-        </div>
-
-        <div className="bg-white text-indigo-700 shadow-sm rounded-xl p-5 border border-indigo-200">
-          <div className="flex items-center gap-2 text-lg font-medium">
-            <FaLayerGroup />
-            <span>Strategies</span>
-          </div>
-          <p className="text-2xl font-bold mt-2">{managerData.strategies}</p>
-        </div>
-
-        {/* <div className="bg-white text-teal-700 shadow-sm rounded-xl p-5 border border-teal-200">
-          <div className="flex items-center gap-2 text-lg font-medium">
-            <FaTools />
-            <span>Backtests</span>
-          </div>
-          <p className="text-2xl font-bold mt-2">{managerData.backtests}</p>
-        </div> */}
-      </div>
+      )}
 
       {/* Tab Section */}
       <div className="bg-white p-6 border border-gray-200 rounded-xl shadow-sm mb-6">
@@ -103,19 +121,16 @@ const FundManagerDashboard = () => {
           ))}
         </div>
 
-        {/* Tab Content Placeholder */}
+        {/* Tab Content */}
         <div>
           {selectedTab === "Overview" && <Overview />}
           {selectedTab === "Strategies" && <Strategies />}
-          {/* {selectedTab === "Backtest" && (
-            <Backtest results={results} setResults={setResults} />
-          )} */}
           {selectedTab === "Compare" && <Compare />}
-          {selectedTab === "Results" && (
-            <Results results={results} />
-          )}
+          {selectedTab === "Results" && <Results results={results} />}
           {selectedTab === "Candle Data" && <ImportCandleData />}
           {selectedTab === "Backtest Your Script" && <BacktestYourScript />}
+          {selectedTab === "Invest" && <ManagerInvest managerId={fundManagerId} />}
+
         </div>
       </div>
     </div>

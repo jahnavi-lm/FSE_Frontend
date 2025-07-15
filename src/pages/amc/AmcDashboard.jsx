@@ -100,7 +100,7 @@ import { FaMoneyBillWave, FaUserTie } from "react-icons/fa";
 import AllMutualFunds from "../../components/dashboard/AllMutualFunds";
 import AllFundManagers from "../../components/dashboard/AllFundManagers";
 import MutualFundPopup from "../../components/dashboard/MutualFundPopup";
-import EditMutualFundPopup from "../../components/Forms/EditMutualFUnd";
+//import EditMutualFundPopup from "../../components/Forms/EditMutualFUnd";
 import axios from "axios";
 
 const AmcDashboard = () => {
