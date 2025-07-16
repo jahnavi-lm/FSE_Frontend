@@ -1,18 +1,18 @@
 import React, { useState, useEffect } from "react";
 import {
-  FaMoneyBillWave,
-  FaChartLine,
-  FaLayerGroup,
-} from "react-icons/fa";
+  fetchStrategyCount,
+  fetchBacktestCount,
+  fetchSchemesByManager,
+} from "../../api/fundManagerApi";
+
 import Strategies from "../../components/Dashboard/Strategies";
 import Backtest from "../../components/Dashboard/Backtest";
 import Overview from "../../components/Dashboard/OverView";
 import Compare from "../../components/Dashboard/Compare";
 import Results from "../../components/Dashboard/Results";
 import ImportCandleData from "../../components/dashboard/ImportCandleData";
-import { initialResults } from "../../../Data/ResultsData";
 import BacktestYourScript from "./BacktestYourScript";
-import { fetchSchemesByManager } from "../../api/fundManagerApi";
+import { initialResults } from "../../../Data/ResultsData";
 import PortfolioSummary from "../../components/Dashboard/ManagerPoertfolioSum";
 import ManagerInvest from "../../components/Dashboard/ManagerInvest";
 
@@ -21,22 +21,31 @@ const FundManagerDashboard = () => {
   const [selectedTab, setSelectedTab] = useState("Overview");
   const [results, setResults] = useState(initialResults);
 
-  const [schemes, setSchemes] = useState([]);
+  const [schemes, setSchemes] = useState(null);
   const [selectedScheme, setSelectedScheme] = useState("");
+
+  const [managerData, setManagerData] = useState({
+    capital: "-",
+    pnl: "-",
+    strategies: "-",
+    backtest: "-",
+  });
 
   const user = JSON.parse(localStorage.getItem("user"));
   const fundManagerId = user?.id;
 
+  // Fetch schemes
   useEffect(() => {
     const loadSchemes = async () => {
       try {
         const data = await fetchSchemesByManager(fundManagerId);
-        setSchemes(data);
-        if (data.length > 0) {
-          setSelectedScheme(data[0].schemeId);
+        setSchemes(data || []);
+        if (data?.length > 0 && !selectedScheme) {
+          setSelectedScheme(data[0].id);
         }
       } catch (error) {
         console.error("Error fetching schemes:", error);
+        setSchemes([]);
       }
     };
 
@@ -45,12 +54,27 @@ const FundManagerDashboard = () => {
     }
   }, [fundManagerId]);
 
-  const managerData = {
-    capital: 500000,
-    pnl: "Loading..",
-    strategies: 8,
-    backtests: 15,
-  };
+  // Fetch strategy & backtest counts
+  useEffect(() => {
+    const loadStats = async () => {
+      try {
+        const [strategies, backtest] = await Promise.all([
+          fetchStrategyCount(),
+          fetchBacktestCount(),
+        ]);
+
+        setManagerData((prev) => ({
+          ...prev,
+          strategies: strategies ?? 0,
+          backtest: backtest ?? 0,
+        }));
+      } catch (err) {
+        console.error("Error fetching dashboard counts:", err);
+      }
+    };
+
+    loadStats();
+  }, []);
 
   const tabs = [
     "Overview",
@@ -62,6 +86,9 @@ const FundManagerDashboard = () => {
     "Invest",
   ];
 
+  const displayValue = (val) =>
+    showValues ? `₹${val.toLocaleString()}` : "****";
+
   return (
     <div className="max-w-7xl mx-auto px-6 py-6 min-h-screen">
       {/* Fund Selector */}
@@ -71,21 +98,32 @@ const FundManagerDashboard = () => {
             <h2 className="text-lg font-semibold text-gray-700 mb-2 md:mb-1">
               🏦 Select Your Fund
             </h2>
-           <select
+            <select
               value={selectedScheme}
               onChange={(e) => setSelectedScheme(e.target.value)}
               className="w-full md:w-72 px-4 py-2 border border-gray-300 rounded-lg shadow-sm text-sm focus:ring-2 focus:ring-teal-500 focus:outline-none"
             >
-              <option value="" disabled>
-                -- Choose a Scheme --
-              </option>
-              {schemes.map((scheme, index) => (
-                <option key={scheme.id || index} value={scheme.schemeId}>
-                  {scheme.name || `Scheme ${index + 1}`}
+              {schemes === null ? (
+                <option value="" disabled>
+                  ⏳ Loading schemes...
                 </option>
-              ))}
+              ) : schemes.length === 0 ? (
+                <option value="" disabled>
+                  -- No Schemes Found --
+                </option>
+              ) : (
+                <>
+                  <option value="" disabled>
+                    -- Choose a Scheme --
+                  </option>
+                  {schemes.map((scheme, index) => (
+                    <option key={scheme.id} value={scheme.id}>
+                      {scheme.name || `Scheme ${index + 1}`}
+                    </option>
+                  ))}
+                </>
+              )}
             </select>
-
           </div>
         </div>
       </div>
@@ -95,7 +133,7 @@ const FundManagerDashboard = () => {
         <PortfolioSummary
           showValues={showValues}
           toggleShowValues={() => setShowValues(!showValues)}
-          data={managerData} // Placeholder for API values in future
+          data={managerData}
         />
       ) : (
         <div className="bg-yellow-50 text-yellow-800 border border-yellow-200 rounded-xl p-4 mb-6 text-sm font-medium">
@@ -129,8 +167,12 @@ const FundManagerDashboard = () => {
           {selectedTab === "Results" && <Results results={results} />}
           {selectedTab === "Candle Data" && <ImportCandleData />}
           {selectedTab === "Backtest Your Script" && <BacktestYourScript />}
-          {selectedTab === "Invest" && <ManagerInvest managerId={fundManagerId} />}
-
+          {selectedTab === "Invest" && (
+            <ManagerInvest
+              managerId={fundManagerId}
+              schemeId={selectedScheme}
+            />
+          )}
         </div>
       </div>
     </div>
