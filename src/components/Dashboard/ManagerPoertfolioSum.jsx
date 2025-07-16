@@ -1,6 +1,6 @@
 // components/Dashboard/PortfolioSummary.jsx
 import React from "react";
-import { FaMoneyBillWave, FaChartLine, FaLayerGroup } from "react-icons/fa";
+import { FaMoneyBillWave, FaChartLine, FaLayerGroup , FaDownload} from "react-icons/fa";
 
 const PortfolioSummary = ({ showValues, toggleShowValues, data }) => {
   const displayValue = (val) => (showValues ? `₹${val.toLocaleString()}` : "****");
@@ -43,6 +43,14 @@ const PortfolioSummary = ({ showValues, toggleShowValues, data }) => {
             <span>Strategies</span>
           </div>
           <p className="text-2xl font-bold mt-2">{data.strategies}</p>
+        </div>
+
+        <div className="bg-green-50 text-green-800 shadow-sm rounded-xl p-5 border border-green-200">
+          <div className="flex items-center gap-2 text-lg font-medium">
+            <FaDownload/>
+            <span>Backtest</span>
+          </div>
+          <p className="text-2xl font-bold mt-2">{data.backtest}</p>
         </div>
       </div>
     </>
