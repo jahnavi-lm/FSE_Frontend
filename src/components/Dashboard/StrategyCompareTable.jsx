@@ -1,13 +1,30 @@
 import { useState, useEffect } from "react";
 
-export function StrategyTradesTable({ strategy }) {
+export function StrategyCompareTable({ strategy }) {
   const [rowsPerPage, setRowsPerPage] = useState(10);
   const [page, setPage] = useState(0);
 
+  // Filter states
+  const [actionFilter, setActionFilter] = useState("ALL");
+  const [symbolFilter, setSymbolFilter] = useState("");
+
   if (!strategy) return null;
 
-  const trades = strategy?.full?.trades || [];
-  const totalPages = rowsPerPage === -1 ? 1 : Math.ceil(trades.length / rowsPerPage);
+  // Original trades
+  const allTrades = strategy?.full?.trades || [];
+
+  // Filtered trades
+  const trades = allTrades.filter((trade) => {
+    let matchesAction =
+      actionFilter === "ALL" || trade.action === actionFilter;
+    let matchesSymbol =
+      symbolFilter === "" ||
+      (trade.symbol?.toLowerCase() ?? "").includes(symbolFilter.toLowerCase());
+    return matchesAction && matchesSymbol;
+  });
+
+  const totalPages =
+    rowsPerPage === -1 ? 1 : Math.ceil(trades.length / rowsPerPage);
 
   const paginatedTrades =
     rowsPerPage === -1
@@ -15,8 +32,8 @@ export function StrategyTradesTable({ strategy }) {
       : trades.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage);
 
   useEffect(() => {
-    setPage(0); // Reset to first page on strategy change
-  }, [strategy.id, rowsPerPage]);
+    setPage(0); // Reset to first page on strategy/filter change
+  }, [strategy?.id, rowsPerPage, actionFilter, symbolFilter]);
 
   return (
     <div className="flex-1 rounded-lg overflow-auto shadow-inner bg-gradient-to-br from-blue-50 to-white border border-blue-100">
@@ -26,6 +43,33 @@ export function StrategyTradesTable({ strategy }) {
 
       {trades.length > 0 ? (
         <>
+          {/* Filter Controls */}
+          <div className="flex flex-wrap items-center gap-4 px-4 py-2 bg-blue-50 border-b border-blue-200">
+            <div>
+              <label className="text-sm mr-2">Action:</label>
+              <select
+                className="border border-gray-300 rounded px-2 py-1"
+                value={actionFilter}
+                onChange={(e) => setActionFilter(e.target.value)}
+              >
+                <option value="ALL">All</option>
+                <option value="BUY">BUY</option>
+                <option value="SELL">SELL</option>
+              </select>
+            </div>
+            <div>
+              <label className="text-sm mr-2">Symbol:</label>
+              <input
+                type="text"
+                className="border border-gray-300 rounded px-2 py-1"
+                placeholder="Filter by symbol..."
+                value={symbolFilter}
+                onChange={(e) => setSymbolFilter(e.target.value)}
+              />
+            </div>
+          </div>
+
+          {/* Table */}
           <div className="overflow-auto">
             <table className="min-w-full text-sm bg-white">
               <thead className="bg-blue-50">
@@ -81,7 +125,7 @@ export function StrategyTradesTable({ strategy }) {
             </table>
           </div>
 
-          {/* Pagination Controls BELOW the table */}
+          {/* Pagination Controls */}
           <div className="flex flex-wrap items-center justify-between px-4 py-2 bg-blue-50 border-t border-blue-200 text-sm">
             <div>
               Rows per page:
