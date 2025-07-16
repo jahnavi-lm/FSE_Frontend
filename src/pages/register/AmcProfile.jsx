@@ -8,7 +8,7 @@ const CompleteAmcProfile = () => {
   const user = JSON.parse(localStorage.getItem("user"));
 
   const [form, setForm] = useState({
-    name: "",
+    name: user.name,
     registrationNo: "",
     contactEmail: user.email,
     contactPhone: "",
@@ -79,11 +79,12 @@ const CompleteAmcProfile = () => {
                 AMC Name
               </label>
               <input
+              readOnly
                 type="text"
                 name="name"
                 required
                 placeholder="e.g. SBI Mutual Fund"
-                className="w-full p-2 border border-gray-300 rounded-md"
+                className="w-full p-2 border border-gray-300 rounded-md bg-gray-100 text-gray-500 cursor-not-allowed hover:border-red-500"
                 value={form.name}
                 onChange={handleChange}
               />

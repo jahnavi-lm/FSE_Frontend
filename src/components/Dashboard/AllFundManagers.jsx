@@ -157,7 +157,7 @@ const AllFundManagers = ({ onDelete = (id) => console.log("Delete", id) }) => {
               managers.map((manager) => (
                 <tr key={manager.id}>
                   <td className="px-4 py-2 text-sm font-bold text-gray-800 whitespace-nowrap">
-                    {manager.user?.name}
+                    {manager.name}
                   </td>
                   <td className="px-4 py-2 text-sm font-semibold text-gray-700 whitespace-nowrap">
                     {manager.employeeCode}

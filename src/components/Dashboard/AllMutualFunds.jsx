@@ -313,7 +313,7 @@ export default function AllMutualFunds() {
                   className="flex items-center justify-between p-2 border rounded hover:bg-gray-100"
                 >
                   <div>
-                    <p className="font-bold">{manager.user?.name}</p>
+                    <p className="font-bold">{manager.name}</p>
                     <p className="text-sm text-gray-600">{manager.qualification}</p>
                   </div>
                   <button
