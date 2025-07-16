@@ -128,6 +128,7 @@ const COMPANIES = [
 
 export default function StrategyBacktestApp() {
   const [form, setForm] = useState({
+    totalCapitalToInvest: 0,
     strategyName: "",
     strategyScript: "",
     symbolList: [],
@@ -135,7 +136,7 @@ export default function StrategyBacktestApp() {
     endDate: "",
     initialCapital: 500000,
   });
-   const [resetform, resetsetForm] = useState(initialFormState); 
+  const [resetform, resetsetForm] = useState(initialFormState);
   const [dropdownVisible, setDropdownVisible] = useState(false);
   const [selectedIndex, setSelectedIndex] = useState(null);
   const [result, setResult] = useState(null);
@@ -173,7 +174,6 @@ export default function StrategyBacktestApp() {
     const { name, value } = e.target;
     setForm((prev) => ({ ...prev, [name]: value }));
   };
-
 
   const toggleSymbol = (symbol) => {
     if (form.symbolList.includes(symbol)) {
@@ -278,7 +278,7 @@ export default function StrategyBacktestApp() {
       toast.error("Failed to save strategy.");
     }
   };
-   const handleReset = () => {
+  const handleReset = () => {
     setForm(resetform); // ✅ resetting using preserved initial state
     setDropdownVisible(false);
     setSelectedIndex(null);
@@ -298,38 +298,88 @@ export default function StrategyBacktestApp() {
           <p className="text-center text-gray-500 mb-8">
             Test your trading strategies with historical data.
           </p>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div className="flex flex-col gap-4">
-              <label className="text-sm font-medium text-gray-700">
-                Strategy Name
-              </label>
-              <input
-                className="border p-2 rounded-lg shadow-sm"
-                type="text"
-                name="strategyName"
-                value={form.strategyName}
-                onChange={handleChange}
-                placeholder="Strategy Name"
-              />
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 p-6 bg-blue-50 rounded-xl shadow-lg">
+            {/* LEFT SECTION */}
+            <div className="flex flex-col gap-6">
+              {/* Strategy Name */}
+              <div>
+                <label className="block text-sm font-semibold text-gray-800 mb-1">
+                  Strategy Name
+                </label>
+                <input
+                  type="text"
+                  name="strategyName"
+                  value={form.strategyName}
+                  onChange={handleChange}
+                  placeholder="Enter strategy name"
+                  className="w-full border border-gray-300 rounded-md p-2 focus:ring-2 focus:ring-blue-400 focus:outline-none shadow-sm bg-white"
+                />
+              </div>
 
-              <label className="text-sm font-medium text-gray-700">
-                Select Symbols
-              </label>
-              <div className="relative">
+              {/* Initial Capital */}
+              <div>
+                <label className="block text-sm font-semibold text-gray-800 mb-1">
+                  Initial Capital
+                </label>
+                <input
+                  type="number"
+                  name="initialCapital"
+                  value={form.initialCapital}
+                  onChange={handleChange}
+                  placeholder="e.g., 500000"
+                  className="w-full border border-gray-300 rounded-md p-2 focus:ring-2 focus:ring-blue-400 focus:outline-none shadow-sm bg-white"
+                />
+              </div>
+            </div>
+
+            {/* RIGHT SECTION */}
+            <div className="flex flex-col gap-6">
+              {/* Date Fields */}
+              <div className="flex flex-col md:flex-row gap-6">
+                <div className="flex-1">
+                  <label className="block text-sm font-semibold text-gray-800 mb-1">
+                    Start Date
+                  </label>
+                  <input
+                    type="date"
+                    name="startDate"
+                    value={form.startDate}
+                    onChange={handleChange}
+                    className="w-full border border-gray-300 rounded-md p-2 focus:ring-2 focus:ring-blue-400 focus:outline-none shadow-sm bg-white"
+                  />
+                </div>
+                <div className="flex-1">
+                  <label className="block text-sm font-semibold text-gray-800 mb-1">
+                    End Date
+                  </label>
+                  <input
+                    type="date"
+                    name="endDate"
+                    value={form.endDate}
+                    onChange={handleChange}
+                    className="w-full border border-gray-300 rounded-md p-2 focus:ring-2 focus:ring-blue-400 focus:outline-none shadow-sm bg-white"
+                  />
+                </div>
+              </div>
+
+              {/* Symbol Selector */}
+              <div>
+                <label className="block text-sm font-semibold text-gray-800 mb-1">
+                  Select Symbols
+                </label>
                 <div
-                  className="border p-2 rounded-lg shadow-sm bg-white cursor-pointer"
+                  className="border border-gray-300 p-2 rounded-md bg-white cursor-pointer shadow-sm hover:border-blue-400 transition-all"
                   onClick={() => setDropdownVisible(!dropdownVisible)}
                 >
                   {form.symbolList.length > 0
                     ? `${form.symbolList.length} selected`
                     : "Click to Select..."}
                 </div>
+
                 {dropdownVisible && (
-                  <div className="absolute z-10 w-full bg-white border mt-1 rounded shadow-lg max-h-60 overflow-y-auto p-2 space-y-2">
+                  <div className="mt-2 border border-gray-300 rounded-md shadow-md p-3 bg-white z-20 absolute max-h-64 overflow-y-auto w-full space-y-2">
                     <div>
-                      <div className="text-gray-600 font-semibold mb-1">
-                        Indices
-                      </div>
+                      <p className="font-semibold text-gray-600">Indices</p>
                       {INDICES.map((symbol) => (
                         <label
                           key={symbol}
@@ -344,10 +394,8 @@ export default function StrategyBacktestApp() {
                         </label>
                       ))}
                     </div>
-                    <div>
-                      <div className="text-gray-600 font-semibold mb-1 mt-2">
-                        Stocks
-                      </div>
+                    <div className="mt-2">
+                      <p className="font-semibold text-gray-600">Stocks</p>
                       {COMPANIES.map((symbol) => (
                         <label
                           key={symbol}
@@ -364,66 +412,50 @@ export default function StrategyBacktestApp() {
                     </div>
                   </div>
                 )}
-              </div>
-              <div className="flex flex-wrap gap-2 mt-2">
-                {form.symbolList.map((symbol) => (
-                  <span
-                    key={symbol}
-                    className="bg-blue-100 text-blue-700 px-3 py-1 rounded-full text-sm flex items-center"
-                  >
-                    {symbol}
-                    <button
-                      className="ml-2 text-red-600 hover:text-red-800"
-                      onClick={() => removeSymbol(symbol)}
+
+                {/* Selected Tags */}
+                <div className="flex flex-wrap gap-2 mt-2">
+                  {form.symbolList.map((symbol) => (
+                    <span
+                      key={symbol}
+                      className="bg-blue-100 text-blue-700 px-3 py-1 rounded-full text-sm flex items-center"
                     >
-                      ×
-                    </button>
-                  </span>
-                ))}
+                      {symbol}
+                      <button
+                        className="ml-2 text-red-600 hover:text-red-800"
+                        onClick={() => removeSymbol(symbol)}
+                      >
+                        ×
+                      </button>
+                    </span>
+                  ))}
+                </div>
               </div>
-              <label className="text-sm font-medium text-gray-700">
-                Start Date
-              </label>
-              <input
-                className="border p-2 rounded-lg shadow-sm"
-                type="date"
-                name="startDate"
-                value={form.startDate}
-                onChange={handleChange}
-              />
-              <label className="text-sm font-medium text-gray-700">
-                End Date
-              </label>
-              <input
-                className="border p-2 rounded-lg shadow-sm"
-                type="date"
-                name="endDate"
-                value={form.endDate}
-                onChange={handleChange}
-              />
             </div>
 
-            <div className="flex flex-col gap-4">
+            {/* STRATEGY SCRIPT FULL WIDTH */}
+            <div className="md:col-span-2 flex flex-col gap-4 mt-4">
               <div className="flex justify-between items-center">
-                <label className="text-sm font-medium text-gray-700">
+                <label className="text-sm font-semibold text-gray-800">
                   Strategy Script
                 </label>
-                <div className="flex items-center gap-4">
+                <div className="flex gap-3">
                   <button
                     onClick={handleReset}
-                    className="bg-red-600 text-white text-sm font-semibold px-4 py-1.5 rounded-md hover:bg-red-700 transition-all"
+                    className="bg-red-600 text-white text-sm font-medium px-4 py-1.5 rounded hover:bg-red-700 transition"
                   >
-                    Reset Form
+                    Reset
                   </button>
                   <button
                     onClick={handleSaveStrategy}
-                    className="bg-green-600 text-white text-sm font-semibold px-4 py-1.5 rounded-md hover:bg-green-700 transition-all"
+                    className="bg-green-600 text-white text-sm font-medium px-4 py-1.5 rounded hover:bg-green-700 transition"
                   >
-                    Save Strategy
+                    Save
                   </button>
                 </div>
               </div>
-              <div className="h-48 border rounded-lg overflow-hidden bg-gray-50">
+
+              <div className="h-48 border border-gray-300 rounded-md overflow-hidden bg-white shadow-sm">
                 <CodeMirror
                   value={form.strategyScript}
                   height="100%"
@@ -435,8 +467,9 @@ export default function StrategyBacktestApp() {
                   basicSetup={{ lineNumbers: true }}
                 />
               </div>
+
               <button
-                className="bg-blue-600 text-white font-semibold px-6 py-2 rounded-lg mt-4 hover:bg-blue-700 transition-all"
+                className="bg-blue-600 text-white font-semibold px-6 py-2 rounded-md mt-2 hover:bg-blue-700 transition self-start"
                 onClick={handleSubmit}
               >
                 Run Backtest
