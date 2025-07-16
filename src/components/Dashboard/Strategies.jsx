@@ -238,7 +238,6 @@
 //   );
 // }
 
-
 // import { useState, useEffect } from 'react';
 // import StrategiesForm from "./StrategiesForm";
 // import StrategyResultModal from "../layouts/StrategyResultModal";
@@ -466,9 +465,7 @@
 //   );
 // }
 
-
-
-import { useState, useEffect } from 'react';
+import { useState, useEffect } from "react";
 import toast from "react-hot-toast";
 import StrategiesForm from "./StrategiesForm";
 import StrategyResultModal from "../layouts/StrategyResultModal";
@@ -478,8 +475,8 @@ import {
   deleteStrategy,
   startSimulation,
   stopSimulation,
-  getBacktestResult
-} from '../../api/strategiesApi';
+  getBacktestResult,
+} from "../../api/strategiesApi";
 
 export default function Strategies() {
   const [strategies, setStrategies] = useState([]);
@@ -497,7 +494,7 @@ export default function Strategies() {
       const response = await getAllStrategies();
       setStrategies(response.data || []);
     } catch (error) {
-      console.error('Error loading strategies:', error);
+      console.error("Error loading strategies:", error);
     }
   };
 
@@ -506,7 +503,7 @@ export default function Strategies() {
       await saveStrategy(strategy);
       await loadStrategies();
     } catch (error) {
-      console.error('Error saving strategy:', error);
+      console.error("Error saving strategy:", error);
     } finally {
       setShowForm(false);
       setEditingStrategy(null);
@@ -527,42 +524,43 @@ export default function Strategies() {
   };
 
   const handleDelete = async (id) => {
-    if (confirm('Are you sure you want to delete this strategy?')) {
+    if (confirm("Are you sure you want to delete this strategy?")) {
       try {
         await deleteStrategy(id);
         await loadStrategies();
       } catch (error) {
-        console.error('Error deleting strategy:', error);
+        console.error("Error deleting strategy:", error);
       }
     }
   };
 
-const handleStartSimulation = async (id) => {
-  try {
-    setRunningSimulations(prev => ({ ...prev, [id]: true }));
+  const handleStartSimulation = async (id) => {
+    try {
+      setRunningSimulations((prev) => ({ ...prev, [id]: true }));
 
-    // Show loading toast and save its ID
-    const toastId = toast.loading("Running simulation...", { duration: Infinity });
+      // Show loading toast and save its ID
+      const toastId = toast.loading("Running simulation...", {
+        duration: Infinity,
+      });
 
-    await startSimulation(id);
+      await startSimulation(id);
 
-    await loadStrategies();
+      await loadStrategies();
 
-    toast.dismiss(toastId); // remove the loading toast
-    toast.success("Simulation completed successfully!", { duration: 5000 });
-  } catch (error) {
-    toast.dismiss(); // dismiss all toasts in case of error
-    toast.error("Failed to start simulation.");
-    console.error("❌ Error starting simulation:", error);
-  } finally {
-    setRunningSimulations(prev => {
-      const newState = { ...prev };
-      delete newState[id];
-      return newState;
-    });
-  }
-};
-
+      toast.dismiss(toastId); // remove the loading toast
+      toast.success("Simulation completed successfully!", { duration: 5000 });
+    } catch (error) {
+      toast.dismiss(); // dismiss all toasts in case of error
+      toast.error("Failed to start simulation.");
+      console.error("❌ Error starting simulation:", error);
+    } finally {
+      setRunningSimulations((prev) => {
+        const newState = { ...prev };
+        delete newState[id];
+        return newState;
+      });
+    }
+  };
 
   const handleStopSimulation = async (id) => {
     try {
@@ -616,23 +614,27 @@ const handleStartSimulation = async (id) => {
                 const id = strategy.id ?? index;
                 const name = strategy.strategyName || `Strategy ${index + 1}`;
                 const symbols = strategy.symbolList || [];
-                const status = strategy.status ? strategy.status.replace(/_/g, ' ') : 'Draft';
+                const status = strategy.status
+                  ? strategy.status.replace(/_/g, " ")
+                  : "Draft";
 
                 return (
                   <tr key={id} className="hover:bg-gray-50">
                     <td className="px-4 py-3 border-b font-semibold">{name}</td>
                     <td className="px-4 py-3 border-b">
                       {symbols.length > 0 ? (
-                        symbols.length > 3
-                          ? `${symbols.slice(0, 2).join(', ')}...`
-                          : symbols.join(', ')
+                        symbols.length > 3 ? (
+                          `${symbols.slice(0, 2).join(", ")}...`
+                        ) : (
+                          symbols.join(", ")
+                        )
                       ) : (
                         <span className="text-gray-400">-</span>
                       )}
                     </td>
                     <td className="px-4 py-3 border-b capitalize">{status}</td>
                     <td className="px-4 py-3 border-b">
-                      {strategy.status === 'running' ? (
+                      {strategy.status === "running" ? (
                         <button
                           onClick={() => handleStopSimulation(strategy.id)}
                           className="px-3 py-1 bg-red-600 text-white rounded hover:bg-red-700 transition text-xs"
@@ -643,14 +645,19 @@ const handleStartSimulation = async (id) => {
                         <button
                           onClick={() => handleStartSimulation(strategy.id)}
                           className="px-3 py-1 bg-teal-600 text-white rounded transition text-xs disabled:opacity-50"
-                          disabled={strategy.status === 'completed' || runningSimulations[strategy.id]}
+                          disabled={
+                            strategy.status === "completed" ||
+                            runningSimulations[strategy.id]
+                          }
                         >
-                          {runningSimulations[strategy.id] ? "Running..." : "Start"}
+                          {runningSimulations[strategy.id]
+                            ? "Running..."
+                            : "Start"}
                         </button>
                       )}
                     </td>
                     <td className="px-4 py-3 border-b">
-                      {strategy.status === 'completed' ? (
+                      {strategy.status === "completed" ? (
                         <button
                           onClick={() => handleViewResult(strategy.id)}
                           className="text-indigo-600 hover:text-indigo-800 text-xs"
@@ -694,7 +701,7 @@ const handleStartSimulation = async (id) => {
 
         {showForm && (
           <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm">
-            <div className="relative bg-white rounded-xl shadow-2xl w-full max-w-3xl max-h-[90vh] overflow-y-auto p-6">
+            <div className="relative bg-white rounded-xl shadow-2xl w-full max-w-3xl max-h-[90vh] overflow-y-auto scrollbar-hide">
               <button
                 onClick={() => setShowForm(false)}
                 className="absolute top-3 right-3 text-gray-500 hover:text-gray-800 text-2xl font-bold"
