@@ -12,7 +12,7 @@ import {
   Line,
 } from "recharts";
 import { getAllStrategies, getBacktestResult } from "../../api/strategiesApi";
-import { StrategyTradesTable } from "./StrategyTradesTable";
+import { StrategyCompareTable } from "./StrategyCompareTable";
 
 export default function Compare() {
   const [allStrategies, setAllStrategies] = useState([]);
@@ -305,8 +305,8 @@ export default function Compare() {
               <div className="bg-white border border-gray-200 p-6 rounded-xl shadow-inner">
                 <h3 className="text-xl font-semibold text-gray-800 mb-4">All Trades Comparison</h3>
                 <div className="flex flex-col lg:flex-row gap-6">
-                  <StrategyTradesTable strategy={strategy1} />
-                  <StrategyTradesTable strategy={strategy2} />
+                  <StrategyCompareTable strategy={strategy1} />
+                  <StrategyCompareTable strategy={strategy2} />
                 </div>
               </div>
             </>
