@@ -9,6 +9,7 @@ export default function FundCompanyActionModal({
   company,
   schemeId,
   managerId,
+  onTransactionComplete ,
 }) {
   const [units, setUnits] = useState("");
   const [result, setResult] = useState(null);
@@ -46,6 +47,8 @@ export default function FundCompanyActionModal({
       } = res.data;
 
       const investedThisTime = (company.nav * numberOfStocks).toFixed(2);
+      if (onTransactionComplete) onTransactionComplete();
+
 
       setResult({
         message: "Stocks purchased successfully!",
@@ -117,22 +120,22 @@ export default function FundCompanyActionModal({
                     {company?.riskFactor ?? "null"}
                   </p>
                   <p>
-                    💼 <strong>Total AUM:</strong> ₹
+                    💼 <strong>Total Capital:</strong> ₹
                     {company?.totalCapital ?? "null"}
                   </p>
 
-                  {actionType === "BUY" && (
+                  {/* {actionType === "BUY" && (
                     <p>
                       💰 <strong>Available Capital:</strong> ₹
                       {availableCapital.toLocaleString()}
                     </p>
-                  )}
+                  )} */}
 
                   {actionType === "SELL" && (
                     <>
-                      <p>
+                      {/* <p>
                         📦 <strong>Units Held:</strong> {unitsHeld}
-                      </p>
+                      </p> */}
                       <p>
                         💸 <strong>Expected Return:</strong> ₹
                         {expectedReturn}

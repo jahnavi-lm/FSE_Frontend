@@ -7,7 +7,8 @@ import {
 } from "../../features/investment/investmentSlice";
 import FundCompanyActionModal from "../FundManager/FundCompanyActionModal";
 
-export default function ManagerInvest({ managerId, schemeId }) {
+export default function ManagerInvest({ managerId, schemeId, onTransactionComplete }) {
+
   const dispatch = useDispatch();
   const {
     companies,
@@ -84,12 +85,12 @@ export default function ManagerInvest({ managerId, schemeId }) {
                         >
                           Buy
                         </button>
-                        {/* <button
+                        <button
                           className="bg-red-500 text-white px-3 py-1 rounded-md text-xs hover:bg-red-600"
                           onClick={() => handleAction("SELL", company)}
                         >
                           Sell
-                        </button> */}
+                        </button>
                       </div>
                     </td>
                   </tr>
@@ -107,6 +108,7 @@ export default function ManagerInvest({ managerId, schemeId }) {
         company={selectedCompany}
         schemeId={schemeId}
         managerId={managerId}
+        onTransactionComplete={onTransactionComplete}
       />
     </>
   );

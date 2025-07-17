@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from "react";
 import { useSelector, useDispatch } from "react-redux";
-import { 
-  getSchemes, 
-  getDashboardStats, 
-  setSelectedScheme 
+import {
+  getSchemes,
+  getDashboardStats,
+  setSelectedScheme,
 } from "../../features/fundManager/fundManagerSlice";
+
 import Strategies from "../../components/Dashboard/Strategies";
 import Overview from "../../components/Dashboard/Overview";
 import Compare from "../../components/Dashboard/Compare";
@@ -20,10 +21,16 @@ const FundManagerDashboard = () => {
   const { schemes, selectedScheme, managerData, status } = useSelector(
     (state) => state.fundManager
   );
+
   const [showValues, setShowValues] = useState(true);
   const [selectedTab, setSelectedTab] = useState("Overview");
-  
+
   const fundManagerId = user?.id;
+
+  const handleTransactionComplete = () => {
+  dispatch(getSchemes(fundManagerId)); // Refresh schemes after buy/sell
+};
+
 
   useEffect(() => {
     if (fundManagerId) {
@@ -48,6 +55,7 @@ const FundManagerDashboard = () => {
 
   return (
     <div className="max-w-7xl mx-auto px-6 py-6 min-h-screen">
+      {/* Fund Scheme Selector */}
       <div className="bg-white border border-gray-200 p-6 rounded-xl shadow-sm mb-6">
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
           <div className="w-full md:w-auto">
@@ -59,7 +67,7 @@ const FundManagerDashboard = () => {
               onChange={handleSchemeChange}
               className="w-full md:w-72 px-4 py-2 border border-gray-300 rounded-lg shadow-sm text-sm focus:ring-2 focus:ring-teal-500 focus:outline-none"
             >
-              {status === 'loading' && !schemes.length ? (
+              {status === "loading" && !schemes.length ? (
                 <option value="" disabled>
                   ⏳ Loading schemes...
                 </option>
@@ -84,11 +92,19 @@ const FundManagerDashboard = () => {
         </div>
       </div>
 
+      {/* Portfolio Summary */}
       {selectedScheme ? (
         <PortfolioSummary
           showValues={showValues}
           toggleShowValues={() => setShowValues(!showValues)}
-          data={managerData}
+          data={{
+            capital:
+              schemes.find((s) => s.id === selectedScheme)?.totalCapital || 0,
+            aum: schemes.find((s) => s.id === selectedScheme)?.aum || 0,
+            pnl: schemes.find((s) => s.id === selectedScheme)?.pnl || 0,
+            strategies: managerData?.strategies ?? 0,
+            backtest: managerData?.backtest ?? 0,
+          }}
         />
       ) : (
         <div className="bg-yellow-50 text-yellow-800 border border-yellow-200 rounded-xl p-4 mb-6 text-sm font-medium">
@@ -96,6 +112,7 @@ const FundManagerDashboard = () => {
         </div>
       )}
 
+      {/* Tab Section */}
       <div className="bg-white p-6 border border-gray-200 rounded-xl shadow-sm mb-6">
         <div className="flex space-x-6 overflow-x-auto mb-6">
           {tabs.map((tab) => (
@@ -124,6 +141,8 @@ const FundManagerDashboard = () => {
             <ManagerInvest
               managerId={fundManagerId}
               schemeId={selectedScheme}
+              onTransactionComplete={handleTransactionComplete}
+              
             />
           )}
         </div>
