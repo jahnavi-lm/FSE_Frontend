@@ -1,77 +1,38 @@
-import React, { useState, useEffect } from "react";
+import React, { useEffect } from "react";
+import { useSelector, useDispatch } from "react-redux";
 import {
-  getCompaniesByIndex,
-  importCandleData,
-} from "../../api/candleImportApi";
-import toast from "react-hot-toast";
+  fetchCompaniesForIndices,
+  importDataForIndices,
+  toggleDropdown,
+  addIndex,
+  removeIndex,
+} from "../../features/candleData/candleDataSlice";
 import { FiPlus, FiX } from "react-icons/fi";
 
-const indices = ["NIFTY 50", "NIFTY NEXT 50", "NIFTY 100"];
-
 const ImportCandleData = () => {
-  const [selectedIndices, setSelectedIndices] = useState([]);
-  const [dropdownOpen, setDropdownOpen] = useState(false);
-  const [companies, setCompanies] = useState([]);
-  const [loading, setLoading] = useState(false);
+  const dispatch = useDispatch();
+  const {
+    indices,
+    selectedIndices,
+    dropdownOpen,
+    companies,
+    status,
+  } = useSelector((state) => state.candleData);
 
   useEffect(() => {
-    const fetchAllCompanies = async () => {
-      if (selectedIndices.length === 0) {
-        setCompanies([]);
-        return;
-      }
+    dispatch(fetchCompaniesForIndices(selectedIndices));
+  }, [selectedIndices, dispatch]);
 
-      setLoading(true);
-      try {
-        let allCompanies = [];
-        for (const index of selectedIndices) {
-          const data = await getCompaniesByIndex(index);
-          allCompanies = [...allCompanies, ...data];
-        }
-        const uniqueCompanies = [...new Set(allCompanies)];
-        setCompanies(uniqueCompanies);
-      } catch (err) {
-        console.error("Error fetching companies:", err);
-        setCompanies([]);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchAllCompanies();
-  }, [selectedIndices]);
-
-  const handleImport = async () => {
-    if (selectedIndices.length === 0) {
-      toast.error("Please select at least one index");
-      return;
-    }
-
-    for (const index of selectedIndices) {
-      const importPromise = importCandleData(index);
-      toast.promise(
-        importPromise,
-        {
-          loading: `Importing ${index}`,
-          success: (message) => message,
-          error: "Import failed. Please try again.",
-        },
-        {
-          loading: { duration: Infinity },
-          success: { duration: 5000 },
-          error: { duration: 5000 },
-        }
-      );
-    }
+  const handleImport = () => {
+    dispatch(importDataForIndices(selectedIndices));
   };
 
   const handleAddIndex = (index) => {
-    setSelectedIndices((prev) => [...prev, index]);
-    setDropdownOpen(false);
+    dispatch(addIndex(index));
   };
 
   const handleRemoveIndex = (index) => {
-    setSelectedIndices((prev) => prev.filter((i) => i !== index));
+    dispatch(removeIndex(index));
   };
 
   return (
@@ -79,10 +40,9 @@ const ImportCandleData = () => {
       <div className="max-w-7xl mx-auto px-6 py-6">
         <h2 className="text-xl font-bold mb-4">Import NIFTY Index Data</h2>
 
-        {/* Add Index Section */}
         <div className="mb-4">
           <button
-            onClick={() => setDropdownOpen((prev) => !prev)}
+            onClick={() => dispatch(toggleDropdown())}
             className="flex items-center gap-2 bg-white border px-4 py-2 rounded-lg shadow hover:bg-blue-100 transition"
           >
             <FiPlus />
@@ -109,7 +69,6 @@ const ImportCandleData = () => {
           )}
         </div>
 
-        {/* Selected Indices Display */}
         <div className="mb-4 flex flex-wrap gap-2">
           {selectedIndices.map((index) => (
             <span
@@ -130,13 +89,14 @@ const ImportCandleData = () => {
         <button
           onClick={handleImport}
           className="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition mb-6"
+          disabled={status === 'loading'}
         >
-          Import Data
+          {status === 'loading' ? 'Importing...' : 'Import Data'}
         </button>
 
-        {loading && <p className="text-gray-600">Loading companies...</p>}
+        {status === 'loading' && <p className="text-gray-600">Loading companies...</p>}
 
-        {!loading && companies.length > 0 && (
+        {status !== 'loading' && companies.length > 0 && (
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
             {Array.from({ length: Math.ceil(companies.length / 10) }).map(
               (_, colIndex) => (

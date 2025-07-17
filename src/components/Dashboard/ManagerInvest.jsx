@@ -1,34 +1,35 @@
-import React, { useEffect, useState } from "react";
-import axiosClient from "../../api/api";
+import React, { useEffect } from "react";
+import { useSelector, useDispatch } from "react-redux";
+import {
+  fetchCompanies,
+  openModal,
+  closeModal,
+} from "../../features/investment/investmentSlice";
 import FundCompanyActionModal from "../FundManager/FundCompanyActionModal";
 
 export default function ManagerInvest({ managerId, schemeId }) {
-  const [companies, setCompanies] = useState([]);
-  const [isModalOpen, setModalOpen] = useState(false);
-  const [selectedCompany, setSelectedCompany] = useState(null);
-  const [actionType, setActionType] = useState("BUY");
+  const dispatch = useDispatch();
+  const {
+    companies,
+    isModalOpen,
+    selectedCompany,
+    actionType,
+    status,
+  } = useSelector((state) => state.investment);
 
   useEffect(() => {
-    const loadCompanies = async () => {
-      try {
-        const response = await axiosClient.get("/api/companies");
-        setCompanies(response.data || []);
-      } catch (err) {
-        console.error("Error fetching companies:", err);
-      }
-    };
-
-    loadCompanies();
-  }, []);
+    // Fetch companies only if they haven't been fetched yet
+    if (status === 'idle') {
+      dispatch(fetchCompanies());
+    }
+  }, [status, dispatch]);
 
   const handleAction = (type, company) => {
     if (!schemeId) {
       alert("⚠️ Please select a fund scheme before performing this action.");
       return;
     }
-    setActionType(type);
-    setSelectedCompany(company);
-    setModalOpen(true);
+    dispatch(openModal({ actionType: type, company }));
   };
 
   return (
@@ -38,9 +39,15 @@ export default function ManagerInvest({ managerId, schemeId }) {
           📊 Fund Manager: Invest in Stocks
         </h3>
 
-        {companies.length === 0 ? (
+        {status === 'loading' && (
+            <p className="text-sm text-gray-600">Loading companies...</p>
+        )}
+
+        {status === 'succeeded' && companies.length === 0 && (
           <p className="text-sm text-gray-600">No companies available for investment.</p>
-        ) : (
+        )}
+
+        {status === 'succeeded' && companies.length > 0 && (
           <div className="overflow-x-auto">
             <table className="min-w-full border text-sm bg-white">
               <thead className="bg-green-100">
@@ -77,12 +84,12 @@ export default function ManagerInvest({ managerId, schemeId }) {
                         >
                           Buy
                         </button>
-                        <button
+                        {/* <button
                           className="bg-red-500 text-white px-3 py-1 rounded-md text-xs hover:bg-red-600"
                           onClick={() => handleAction("SELL", company)}
                         >
                           Sell
-                        </button>
+                        </button> */}
                       </div>
                     </td>
                   </tr>
@@ -93,13 +100,12 @@ export default function ManagerInvest({ managerId, schemeId }) {
         )}
       </div>
 
-      {/* ✅ Modal with schemeId passed */}
       <FundCompanyActionModal
         isOpen={isModalOpen}
-        onClose={() => setModalOpen(false)}
+        onClose={() => dispatch(closeModal())}
         actionType={actionType}
         company={selectedCompany}
-        schemeId={schemeId} // ✅ required for buy API
+        schemeId={schemeId}
         managerId={managerId}
       />
     </>
