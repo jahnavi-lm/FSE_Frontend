@@ -1,48 +1,38 @@
 import { Link, useNavigate } from 'react-router-dom';
 import { useState, useEffect } from 'react';
-// import BackgroundImage from "../../../public/bgImage.png";
-// import BackgroundImage from "../../../public/assets/bgImage.jpg";
+import { useDispatch, useSelector } from 'react-redux';
 import BackgroundImage from "../../../public/bgImage.jpg";
 import { loginUser } from "../../api/authApi";
-
-
+import { loginStart, loginSuccess, loginFailure } from "../../features/auth/authSlice";
 
 export default function Login() {
   const navigate = useNavigate();
+  const dispatch = useDispatch();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [loading, setLoading] = useState(false);
+  const { isLoading, isAuthenticated } = useSelector((state) => state.auth);
 
   useEffect(() => {
     document.title = "Login | Fund Simulator";
   }, []);
 
+  useEffect(() => {
+    if (isAuthenticated) {
+      navigate('/user/redirect');
+    }
+  }, [isAuthenticated, navigate]);
+
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setLoading(true);
+    dispatch(loginStart());
 
     try {
       const { accessToken, user } = await loginUser(email, password);
-
-      localStorage.setItem("authToken", accessToken);
-      localStorage.setItem("user", JSON.stringify(user));
-      localStorage.setItem("loggedIn", "true");
-
-      // Redirect based on role
-      if (user.role === "INVESTOR") {
-        navigate("/user/redirect");
-      } else if (user.role === "MANAGER") {
-        navigate("/user/redirect");
-      } else if (user.role==="AMC"){
-        navigate("/user/redirect");
-      } else{
-         alert("Unknown role. Contact support.");
-      }
+      dispatch(loginSuccess({ token: accessToken, user }));
     } catch (error) {
+      dispatch(loginFailure());
       alert("Login failed: Invalid email or password.");
       console.error(error);
-    } finally {
-      setLoading(false);
     }
   };
 
@@ -84,10 +74,10 @@ export default function Login() {
             </div>
             <button
               type="submit"
-              disabled={loading}
+              disabled={isLoading}
               className="w-full bg-[#fa6b11] hover:bg-orange-300 text-white py-2 rounded-lg font-semibold transition duration-200 shadow-sm"
             >
-              {loading ? "Signing In..." : "Sign In"}
+              {isLoading ? "Signing In..." : "Sign In"}
             </button>
           </form>
 

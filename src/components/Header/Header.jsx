@@ -1,17 +1,19 @@
 import { useState, useEffect } from 'react';
 import { useLocation, Link, useNavigate } from 'react-router-dom';
 import { FiBell, FiLogOut, FiUser, FiHome } from 'react-icons/fi';
+import { useSelector, useDispatch } from 'react-redux';
+import { logout } from '../../features/auth/authSlice';
 
 export default function Header() {
   const [visible, setVisible] = useState(true);
   const location = useLocation();
   const navigate = useNavigate();
+  const dispatch = useDispatch();
+  const { user } = useSelector((state) => state.auth);
 
   const darkRoutes = ['/Investor/Home', '/Investor/Account'];
   const isDark = darkRoutes.includes(location.pathname);
   const logoSrc = isDark ? '/logo-white.svg' : '/logo.png';
-
-  const user = JSON.parse(localStorage.getItem('user'));
   const hideNav = location.pathname.toLowerCase().endsWith("register");
 
   useEffect(() => {
@@ -42,7 +44,7 @@ export default function Header() {
   };
 
   const handleLogout = () => {
-    localStorage.clear();
+    dispatch(logout());
     navigate('/login', { replace: true });
   };
 
@@ -53,7 +55,6 @@ export default function Header() {
       } ${isDark ? 'bg-transparent' : 'bg-white/70 backdrop-blur-md shadow-md'}`}
     >
       <div className="max-w-7xl mx-auto px-6 py-3 flex items-center justify-between">
-        {/* Logo & Home */}
         <div className="flex items-center gap-4">
           <img
             src={logoSrc}
@@ -69,7 +70,6 @@ export default function Header() {
           )}
         </div>
 
-        {/* Navigation and Action Icons */}
         <div className="flex items-center gap-6">
           {!hideNav && (
             <nav className="hidden md:flex gap-6 text-sm font-medium text-gray-700">
@@ -91,7 +91,6 @@ export default function Header() {
             </nav>
           )}
 
-          {/* Icons */}
           <div className="flex items-center gap-3">
             <IconButton icon={<FiBell />} tooltip="Notifications" />
             {!hideNav && <IconButton icon={<FiUser />} tooltip="Profile" to="/dashboard/my-account" />}
@@ -103,7 +102,6 @@ export default function Header() {
   );
 }
 
-/* Reusable Icon Button */
 function IconButton({ icon, tooltip, to, onClick, color = 'text-gray-700' }) {
   const base =
     'group relative flex items-center justify-center w-10 h-10 rounded-full bg-gray-100 hover:bg-[#fa6b11]/20 transition-all duration-300 ease-in-out';
