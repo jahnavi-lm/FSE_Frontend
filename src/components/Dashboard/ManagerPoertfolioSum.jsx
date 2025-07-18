@@ -22,12 +22,24 @@ const PortfolioSummary = ({ showValues, toggleShowValues, data }) => {
       {/* Summary Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-6">
         <div className="bg-blue-50 text-blue-800 shadow-sm rounded-xl p-5 border border-blue-200">
-          <div className="flex items-center gap-2 text-lg font-medium">
-            <FaMoneyBillWave />
-            <span>Total Capital</span>
-          </div>
-          <p className="text-2xl font-bold mt-2">{displayValue(data.capital)}</p>
-        </div>
+  <div className="flex items-center gap-2 text-lg font-medium">
+    <FaMoneyBillWave />
+    <span>Total Capital</span>
+  </div>
+  <p className="text-2xl font-bold mt-2">{displayValue(data.capital)}</p>
+
+  <div className="text-sm mt-2 space-y-1">
+    <p>
+      <span className="font-medium text-blue-700">AUM:</span>{" "}
+      {displayValue(data.aum)}
+    </p>
+    {/* <p>
+      <span className="font-medium text-blue-700">Available to Invest:</span>{" "}
+      {displayValue(Math.max(data.capital - data.aum, 0))}
+    </p> */}
+  </div>
+</div>
+
 
         <div className="bg-green-50 text-green-800 shadow-sm rounded-xl p-5 border border-green-200">
           <div className="flex items-center gap-2 text-lg font-medium">

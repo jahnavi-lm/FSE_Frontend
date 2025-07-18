@@ -1,3 +1,4 @@
+import axios from "axios";
 import axiosClient from "./api";
 
 // ✅ Get all schemes managed by a Fund Manager
@@ -20,10 +21,9 @@ export const buyCompanyShares = async (managerId, payload) => {
 };
 
 // 🔁 TODO: SELL company shares (not implemented yet in backend)
-export const sellCompanyShares = async (managerId, payload) => {
-  // Placeholder logic — implement API when available
-  // Example: return await axiosClient.post(`/api/fundManagers/sell/${managerId}`, payload);
-  throw new Error("Sell API not implemented yet");
+export const sellCompanyShares = async ( payload) => {
+  const response = await axiosClient.post(`/api/fundManagers/sell`,payload);
+  return response.data;
 };
 
 export const fetchStrategyCount = async () => {
@@ -35,6 +35,7 @@ export const fetchBacktestCount = async () => {
   const res = await axiosClient.get("/api/statistics/backtest-results/count");
   return res.data; // Expecting a number
 };
+
 
 
 
