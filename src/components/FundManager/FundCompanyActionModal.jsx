@@ -71,6 +71,44 @@ export default function FundCompanyActionModal({
     onClose();
   };
 
+  const handleConfirmSell = async () => {
+  try {
+    const numberOfStocks = parseInt(units);
+
+    const payload = {
+      fundSchemeId: schemeId,
+      companyId: company.id,
+      stocksToSell: numberOfStocks,
+    };
+
+    const res = await axiosClient.post(`/api/fundManagers/sell`, payload);
+
+    const {
+      investedAmount,
+      numberOfStocks: totalStocks,
+      investmentDate,
+    } = res.data;
+
+    const investedThisTime = (company.nav * numberOfStocks).toFixed(2);
+    if (onTransactionComplete) onTransactionComplete();
+
+    setResult({
+      message: "Stocks sold successfully!",
+      investedThisTime,
+      stocksBought: numberOfStocks,
+      totalInvested: investedAmount,
+      totalStocksHeld: totalStocks,
+      time: investmentDate,
+    });
+
+    setUnits("");
+  } catch (error) {
+    const msg = error.response?.data?.message || "Transaction failed.";
+    setResult({ message: msg });
+  }
+};
+
+
   return (
     <Transition appear show={isOpen} as={Fragment}>
       <Dialog as="div" className="relative z-30" onClose={closeModal}>
@@ -176,7 +214,7 @@ export default function FundCompanyActionModal({
                       <button
                         disabled={isInvalid}
                         className="px-4 py-2 rounded-md text-white bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50"
-                        onClick={handleConfirm}
+                        onClick={actionType === "BUY" ? handleConfirm : handleConfirmSell}
                       >
                         {actionType === "BUY" ? "Buy Now" : "Sell Now"}
                       </button>
@@ -185,24 +223,41 @@ export default function FundCompanyActionModal({
                 ) : (
                   <div className="mt-4 bg-green-50 border border-green-200 rounded-md p-3 text-sm text-green-800 space-y-1">
                     <p>✅ {result.message}</p>
-                    <p>
-                      💼 <strong>Invested This Time:</strong> ₹
-                      {result.investedThisTime}
-                    </p>
-                    <p>
-                      📦 <strong>Stocks Bought:</strong> {result.stocksBought}
-                    </p>
-                    <p>
-                      📊 <strong>Total Invested So Far:</strong> ₹
-                      {result.totalInvested}
-                    </p>
-                    <p>
-                      📈 <strong>Total Stocks Held:</strong>{" "}
-                      {result.totalStocksHeld}
-                    </p>
-                    <p className="text-xs text-gray-600">
-                      🕒 {new Date(result.time).toLocaleString()}
-                    </p>
+                    {actionType === "BUY" ? (
+                        <>
+                      <p>
+                        💼 <strong>Invested This Time:</strong> ₹
+                        {result.investedThisTime}
+                      </p>
+                      <p>
+                        📦 <strong>Stocks Bought:</strong> {result.stocksBought}
+                      </p>
+                      <p>
+                        📊 <strong>Total Invested So Far:</strong> ₹
+                        {result.totalInvested}
+                      </p>
+                      <p>
+                        📈 <strong>Total Stocks Held:</strong> {result.totalStocksHeld}
+                      </p>
+                    </>
+                  ) : (
+                    <>
+                      <p>
+                        💸 <strong>Amount Credited:</strong> ₹
+                        {result.investedThisTime}
+                      </p>
+                      <p>
+                        📦 <strong>Stocks Sold:</strong> {result.stocksBought}
+                      </p>
+                      <p>
+                        📉 <strong>Remaining Stocks:</strong> {result.totalStocksHeld}
+                      </p>
+                    </>
+                  )}
+
+                  <p className="text-xs text-gray-600">
+                    🕒 {new Date(result.time).toLocaleString()}
+                  </p>
                     <div className="mt-3 flex justify-end">
                       <button
                         className="px-3 py-1 bg-indigo-600 text-white rounded hover:bg-indigo-700"
