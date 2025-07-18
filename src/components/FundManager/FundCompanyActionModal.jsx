@@ -1,18 +1,42 @@
-import React, { Fragment, useState } from "react";
+import React, { Fragment, useEffect, useState } from "react";
 import { Dialog, Transition } from "@headlessui/react";
 import axiosClient from "../../api/api";
+import { useSelector, useDispatch } from "react-redux";
+import {
+  fetchCompanies,
+} from "../../features/investment/investmentSlice";
 
 export default function FundCompanyActionModal({
+  isOverview,
   isOpen,
   onClose,
   actionType,
   company,
   schemeId,
   managerId,
-  onTransactionComplete ,
+  onTransactionComplete,
 }) {
+  const dispatch = useDispatch();
+  const {
+    companies,
+    status,
+  } = useSelector((state) => state.investment);
+
+  useEffect(() => {
+    if (status === 'idle') {
+      dispatch(fetchCompanies());
+    }
+  }, [status, dispatch]);
+
+
   const [units, setUnits] = useState("");
   const [result, setResult] = useState(null);
+
+  const selectedCompany = companies.find((c) => c.id === company?.companyId);
+
+  console.log("selected:", selectedCompany)
+  console.log("comp", company)
+
 
   const nav = company?.nav ?? 0;
   const unitsHeld = "Pending"; // Replace with actual holdings if needed
@@ -29,11 +53,12 @@ export default function FundCompanyActionModal({
       const numberOfStocks = parseInt(units);
 
       const payload = {
-        companyId: company.id,
-        companyName: company.symbol,
+        companyId: isOverview ? selectedCompany.id : company.id ,
+        companyName: isOverview ? selectedCompany.companyName :  company.symbol,
         numberOfStocks,
         fundSchemeId: schemeId,
       };
+      console.log("Bla Bla ",payload);
 
       const res = await axiosClient.post(
         `/api/fundManagers/buy/${managerId}`,
@@ -46,7 +71,7 @@ export default function FundCompanyActionModal({
         investmentDate,
       } = res.data;
 
-      const investedThisTime = (company.nav * numberOfStocks).toFixed(2);
+      const investedThisTime = isOverview?(selectedCompany.nav * numberOfStocks).toFixed(2):(company.nav * numberOfStocks).toFixed(2);
       if (onTransactionComplete) onTransactionComplete();
 
 
@@ -72,41 +97,42 @@ export default function FundCompanyActionModal({
   };
 
   const handleConfirmSell = async () => {
-  try {
-    const numberOfStocks = parseInt(units);
+    try {
+      const numberOfStocks = parseInt(units);
 
-    const payload = {
-      fundSchemeId: schemeId,
-      companyId: company.id,
-      stocksToSell: numberOfStocks,
-    };
+      const payload = {
+        fundSchemeId: schemeId,
+        companyId: isOverview ? selectedCompany.id : company.id,
+        stocksToSell: numberOfStocks,
+      };
 
-    const res = await axiosClient.post(`/api/fundManagers/sell`, payload);
+      const res = await axiosClient.post(`/api/fundManagers/sell`, payload);
 
-    const {
-      investedAmount,
-      numberOfStocks: totalStocks,
-      investmentDate,
-    } = res.data;
+      const {
+        investedAmount,
+        numberOfStocks: totalStocks,
+        investmentDate,
+      } = res.data;
 
-    const investedThisTime = (company.nav * numberOfStocks).toFixed(2);
-    if (onTransactionComplete) onTransactionComplete();
+       const investedThisTime = isOverview?(selectedCompany.nav * numberOfStocks).toFixed(2):(company.nav * numberOfStocks).toFixed(2);
 
-    setResult({
-      message: "Stocks sold successfully!",
-      investedThisTime,
-      stocksBought: numberOfStocks,
-      totalInvested: investedAmount,
-      totalStocksHeld: totalStocks,
-      time: investmentDate,
-    });
+      if (onTransactionComplete) onTransactionComplete();
 
-    setUnits("");
-  } catch (error) {
-    const msg = error.response?.data?.message || "Transaction failed.";
-    setResult({ message: msg });
-  }
-};
+      setResult({
+        message: "Stocks sold successfully!",
+        investedThisTime,
+        stocksBought: numberOfStocks,
+        totalInvested: investedAmount,
+        totalStocksHeld: totalStocks,
+        time: investmentDate,
+      });
+
+      setUnits("");
+    } catch (error) {
+      const msg = error.response?.data?.message || "Transaction failed.";
+      setResult({ message: msg });
+    }
+  };
 
 
   return (
@@ -144,22 +170,29 @@ export default function FundCompanyActionModal({
 
                 <div className="mt-4 space-y-2 text-sm text-gray-700">
                   <p>
-                    🏢 <strong>Company:</strong> {company?.name} (
-                    {company?.symbol})
+                    🏢 <strong>Company:</strong>{" "}
+                    {company?.name || selectedCompany?.name || "N/A"} (
+                    {company?.symbol || selectedCompany?.symbol || "N/A"})
                   </p>
+
                   <p>
-                    📈 <strong>Index:</strong> {company?.indexName || "—"}
+                    📈 <strong>Index:</strong>{" "}
+                    {company?.indexName || selectedCompany?.indexName || "N/A"}
                   </p>
+
                   <p>
-                    📊 <strong>Current NAV:</strong> ₹{nav}
+                    📊 <strong>Current NAV:</strong> ₹
+                    {company?.nav ?? selectedCompany?.nav ?? "N/A"}
                   </p>
+
                   <p>
                     ⚠️ <strong>Risk Factor:</strong>{" "}
-                    {company?.riskFactor ?? "null"}
+                    {company?.riskFactor ?? selectedCompany?.riskFactor ?? "N/A"}
                   </p>
+
                   <p>
                     💼 <strong>Total Capital:</strong> ₹
-                    {company?.totalCapital ?? "null"}
+                    {company?.totalCapital ?? selectedCompany?.totalCapital ?? "N/A"}
                   </p>
 
                   {/* {actionType === "BUY" && (
@@ -224,40 +257,40 @@ export default function FundCompanyActionModal({
                   <div className="mt-4 bg-green-50 border border-green-200 rounded-md p-3 text-sm text-green-800 space-y-1">
                     <p>✅ {result.message}</p>
                     {actionType === "BUY" ? (
-                        <>
-                      <p>
-                        💼 <strong>Invested This Time:</strong> ₹
-                        {result.investedThisTime}
-                      </p>
-                      <p>
-                        📦 <strong>Stocks Bought:</strong> {result.stocksBought}
-                      </p>
-                      <p>
-                        📊 <strong>Total Invested So Far:</strong> ₹
-                        {result.totalInvested}
-                      </p>
-                      <p>
-                        📈 <strong>Total Stocks Held:</strong> {result.totalStocksHeld}
-                      </p>
-                    </>
-                  ) : (
-                    <>
-                      <p>
-                        💸 <strong>Amount Credited:</strong> ₹
-                        {result.investedThisTime}
-                      </p>
-                      <p>
-                        📦 <strong>Stocks Sold:</strong> {result.stocksBought}
-                      </p>
-                      <p>
-                        📉 <strong>Remaining Stocks:</strong> {result.totalStocksHeld}
-                      </p>
-                    </>
-                  )}
+                      <>
+                        <p>
+                          💼 <strong>Invested This Time:</strong> ₹
+                          {result.investedThisTime}
+                        </p>
+                        <p>
+                          📦 <strong>Stocks Bought:</strong> {result.stocksBought}
+                        </p>
+                        <p>
+                          📊 <strong>Total Invested So Far:</strong> ₹
+                          {result.totalInvested}
+                        </p>
+                        <p>
+                          📈 <strong>Total Stocks Held:</strong> {result.totalStocksHeld}
+                        </p>
+                      </>
+                    ) : (
+                      <>
+                        <p>
+                          💸 <strong>Amount Credited:</strong> ₹
+                          {result.investedThisTime}
+                        </p>
+                        <p>
+                          📦 <strong>Stocks Sold:</strong> {result.stocksBought}
+                        </p>
+                        <p>
+                          📉 <strong>Remaining Stocks:</strong> {result.totalStocksHeld}
+                        </p>
+                      </>
+                    )}
 
-                  <p className="text-xs text-gray-600">
-                    🕒 {new Date(result.time).toLocaleString()}
-                  </p>
+                    <p className="text-xs text-gray-600">
+                      🕒 {new Date(result.time).toLocaleString()}
+                    </p>
                     <div className="mt-3 flex justify-end">
                       <button
                         className="px-3 py-1 bg-indigo-600 text-white rounded hover:bg-indigo-700"

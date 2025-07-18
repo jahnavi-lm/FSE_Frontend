@@ -14,6 +14,7 @@ import ImportCandleData from "../../components/dashboard/ImportCandleData";
 import BacktestYourScript from "./BacktestYourScript";
 import PortfolioSummary from "../../components/Dashboard/ManagerPoertfolioSum";
 import ManagerInvest from "../../components/Dashboard/ManagerInvest";
+import { calcGeneratorDuration } from "framer-motion";
 
 const FundManagerDashboard = () => {
   const dispatch = useDispatch();
@@ -22,14 +23,19 @@ const FundManagerDashboard = () => {
     (state) => state.fundManager
   );
 
+  const currentSchem = schemes.find(scheme => scheme.id === selectedScheme);
+  const investedCompanyList = currentSchem?.companiesInvestedIn;
+
+  console.log(investedCompanyList)
+
   const [showValues, setShowValues] = useState(true);
   const [selectedTab, setSelectedTab] = useState("Overview");
 
   const fundManagerId = user?.id;
 
   const handleTransactionComplete = () => {
-  dispatch(getSchemes(fundManagerId)); // Refresh schemes after buy/sell
-};
+    dispatch(getSchemes(fundManagerId)); // Refresh schemes after buy/sell
+  };
 
 
   useEffect(() => {
@@ -119,11 +125,10 @@ const FundManagerDashboard = () => {
             <button
               key={tab}
               onClick={() => setSelectedTab(tab)}
-              className={`pb-2 text-md font-medium transition-all duration-200 ${
-                selectedTab === tab
+              className={`pb-2 text-md font-medium transition-all duration-200 ${selectedTab === tab
                   ? "text-teal-600 border-b-2 border-teal-600"
                   : "text-gray-500 hover:text-blue-600"
-              }`}
+                }`}
             >
               {tab}
             </button>
@@ -131,7 +136,11 @@ const FundManagerDashboard = () => {
         </div>
 
         <div>
-          {selectedTab === "Overview" && <Overview />}
+          {selectedTab === "Overview" && <Overview managerId={fundManagerId}
+            schemeId={selectedScheme}
+            onTransactionComplete={handleTransactionComplete} 
+            investedCompanyList={investedCompanyList} 
+            />}
           {selectedTab === "Strategies" && <Strategies />}
           {selectedTab === "Compare" && <Compare />}
           {selectedTab === "Results" && <Results />}
@@ -142,7 +151,7 @@ const FundManagerDashboard = () => {
               managerId={fundManagerId}
               schemeId={selectedScheme}
               onTransactionComplete={handleTransactionComplete}
-              
+
             />
           )}
         </div>
