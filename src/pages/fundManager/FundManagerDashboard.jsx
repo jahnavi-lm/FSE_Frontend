@@ -53,7 +53,7 @@ const FundManagerDashboard = () => {
     "Overview",
     "Strategies",
     "Compare",
-    "Results",
+    // "Results",
     "Candle Data",
     "Backtest Your Script",
     "Invest",
@@ -150,7 +150,7 @@ const FundManagerDashboard = () => {
 
           {selectedTab === "Strategies" && <Strategies />}
           {selectedTab === "Compare" && <Compare />}
-          {selectedTab === "Results" && <Results />}
+          {/* {selectedTab === "Results" && <Results />} */}
           {selectedTab === "Candle Data" && <ImportCandleData />}
           {selectedTab === "Backtest Your Script" && <BacktestYourScript />}
           {selectedTab === "Invest" && (
