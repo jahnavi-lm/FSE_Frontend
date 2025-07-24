@@ -8,7 +8,6 @@ import {
 import FundCompanyActionModal from "../FundManager/FundCompanyActionModal";
 
 export default function ManagerInvest({ managerId, schemeId, onTransactionComplete }) {
-
   const dispatch = useDispatch();
   const {
     companies,
@@ -18,9 +17,9 @@ export default function ManagerInvest({ managerId, schemeId, onTransactionComple
     status,
   } = useSelector((state) => state.investment);
 
+  // Fetch investment universe when not loaded
   useEffect(() => {
-    // Fetch companies only if they haven't been fetched yet
-    if (status === 'idle') {
+    if (status === "idle") {
       dispatch(fetchCompanies());
     }
   }, [status, dispatch]);
@@ -40,15 +39,15 @@ export default function ManagerInvest({ managerId, schemeId, onTransactionComple
           📊 Fund Manager: Invest in Stocks
         </h3>
 
-        {status === 'loading' && (
-            <p className="text-sm text-gray-600">Loading companies...</p>
+        {status === "loading" && (
+          <p className="text-sm text-gray-600">Loading companies...</p>
         )}
 
-        {status === 'succeeded' && companies.length === 0 && (
+        {status === "succeeded" && companies.length === 0 && (
           <p className="text-sm text-gray-600">No companies available for investment.</p>
         )}
 
-        {status === 'succeeded' && companies.length > 0 && (
+        {status === "succeeded" && companies.length > 0 && (
           <div className="overflow-x-auto">
             <table className="min-w-full border text-sm bg-white">
               <thead className="bg-green-100">
@@ -59,6 +58,8 @@ export default function ManagerInvest({ managerId, schemeId, onTransactionComple
                   <th className="px-4 py-2 border">NAV</th>
                   <th className="px-4 py-2 border">Risk Factor</th>
                   <th className="px-4 py-2 border">Total Capital</th>
+                  {/* If you want to display number of stocks in holdings, you can add a column here */}
+                  {/* <th className="px-4 py-2 border">Number of Stocks</th> */}
                   <th className="px-4 py-2 border">Actions</th>
                 </tr>
               </thead>
@@ -77,6 +78,7 @@ export default function ManagerInvest({ managerId, schemeId, onTransactionComple
                         ? `₹${Number(company.totalCapital).toLocaleString()}`
                         : "null"}
                     </td>
+                    {/* Optionally: <td className="px-4 py-2 border">{company.stocksHeld ?? "—"}</td> */}
                     <td className="px-4 py-2 border text-center">
                       <div className="flex justify-center gap-2">
                         <button
@@ -101,7 +103,9 @@ export default function ManagerInvest({ managerId, schemeId, onTransactionComple
         )}
       </div>
 
+      {/* Pass 'showStockInput' as true to show the number of stocks input in modal */}
       <FundCompanyActionModal
+        key={schemeId}
         isOpen={isModalOpen}
         onClose={() => dispatch(closeModal())}
         actionType={actionType}
@@ -109,6 +113,7 @@ export default function ManagerInvest({ managerId, schemeId, onTransactionComple
         schemeId={schemeId}
         managerId={managerId}
         onTransactionComplete={onTransactionComplete}
+        showStockInput={true} // <-- add this prop, modal can use it
       />
     </>
   );

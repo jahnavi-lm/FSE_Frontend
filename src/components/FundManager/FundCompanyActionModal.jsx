@@ -1,10 +1,8 @@
-import React, { Fragment, useEffect, useState } from "react";
+import React, { Fragment, useEffect, useState, useMemo } from "react";
 import { Dialog, Transition } from "@headlessui/react";
 import axiosClient from "../../api/api";
 import { useSelector, useDispatch } from "react-redux";
-import {
-  fetchCompanies,
-} from "../../features/investment/investmentSlice";
+import { fetchCompanies } from "../../features/investment/investmentSlice";
 
 export default function FundCompanyActionModal({
   isOverview,
@@ -15,35 +13,43 @@ export default function FundCompanyActionModal({
   schemeId,
   managerId,
   onTransactionComplete,
+  investedCompanyList = [],
 }) {
   const dispatch = useDispatch();
-  const {
-    companies,
-    status,
-  } = useSelector((state) => state.investment);
+  const { companies, status } = useSelector((state) => state.investment);
 
   useEffect(() => {
-    if (status === 'idle') {
-      dispatch(fetchCompanies());
-    }
+    if (status === 'idle') dispatch(fetchCompanies());
   }, [status, dispatch]);
-
 
   const [units, setUnits] = useState("");
   const [result, setResult] = useState(null);
 
   const selectedCompany = companies.find((c) => c.id === company?.companyId);
 
-  console.log("selected:", selectedCompany)
-  console.log("comp", company)
+  const nav = company?.nav ?? selectedCompany?.nav ?? 0;
 
-
-  const nav = company?.nav ?? 0;
-  const unitsHeld = "Pending"; // Replace with actual holdings if needed
-  const availableCapital = "Pending"; // Replace with real wallet value
+  // Compute unitsHeld: check prop company, or find in investedCompanyList by id, or symbol as fallback
+  const unitsHeld = useMemo(() => {
+    if (company?.numberOfStocks !== undefined) return company.numberOfStocks;
+    // Try matching by id, fallback to symbol or companyName if id missing
+    if (investedCompanyList && company) {
+      let holding = null;
+      if (company.id) {
+        holding = investedCompanyList.find((item) => item.id === company.id);
+      }
+      if (!holding && company.symbol) {
+        holding = investedCompanyList.find((item) => item.symbol === company.symbol);
+      }
+      if (!holding && company.companyName) {
+        holding = investedCompanyList.find((item) => item.companyName === company.companyName);
+      }
+      return holding ? holding.numberOfStocks : "N/A";
+    }
+    return "N/A";
+  }, [company, investedCompanyList]);
 
   const isInvalid = !units || isNaN(units) || Number(units) <= 0;
-
   const expectedReturn = actionType === "SELL"
     ? (Number(units) * nav).toFixed(2)
     : null;
@@ -51,30 +57,19 @@ export default function FundCompanyActionModal({
   const handleConfirm = async () => {
     try {
       const numberOfStocks = parseInt(units);
-
       const payload = {
-        companyId: isOverview ? selectedCompany.id : company.id ,
-        companyName: isOverview ? selectedCompany.companyName :  company.symbol,
+        companyId: isOverview ? selectedCompany.id : company.id,
+        companyName: isOverview ? selectedCompany.companyName : company.symbol,
         numberOfStocks,
         fundSchemeId: schemeId,
       };
-      console.log("Bla Bla ",payload);
-
       const res = await axiosClient.post(
         `/api/fundManagers/buy/${managerId}`,
         payload
       );
-
-      const {
-        investedAmount,
-        numberOfStocks: totalStocks,
-        investmentDate,
-      } = res.data;
-
-      const investedThisTime = isOverview?(selectedCompany.nav * numberOfStocks).toFixed(2):(company.nav * numberOfStocks).toFixed(2);
+      const { investedAmount, numberOfStocks: totalStocks, investmentDate } = res.data;
+      const investedThisTime = (nav * numberOfStocks).toFixed(2);
       if (onTransactionComplete) onTransactionComplete();
-
-
       setResult({
         message: "Stocks purchased successfully!",
         investedThisTime,
@@ -83,9 +78,8 @@ export default function FundCompanyActionModal({
         totalStocksHeld: totalStocks,
         time: investmentDate,
       });
-
       setUnits("");
-    } catch (error) {
+    } catch {
       setResult({ message: "Transaction failed." });
     }
   };
@@ -99,25 +93,15 @@ export default function FundCompanyActionModal({
   const handleConfirmSell = async () => {
     try {
       const numberOfStocks = parseInt(units);
-
       const payload = {
         fundSchemeId: schemeId,
         companyId: isOverview ? selectedCompany.id : company.id,
         stocksToSell: numberOfStocks,
       };
-
       const res = await axiosClient.post(`/api/fundManagers/sell`, payload);
-
-      const {
-        investedAmount,
-        numberOfStocks: totalStocks,
-        investmentDate,
-      } = res.data;
-
-       const investedThisTime = isOverview?(selectedCompany.nav * numberOfStocks).toFixed(2):(company.nav * numberOfStocks).toFixed(2);
-
+      const { investedAmount, numberOfStocks: totalStocks, investmentDate } = res.data;
+      const investedThisTime = (nav * numberOfStocks).toFixed(2);
       if (onTransactionComplete) onTransactionComplete();
-
       setResult({
         message: "Stocks sold successfully!",
         investedThisTime,
@@ -126,14 +110,12 @@ export default function FundCompanyActionModal({
         totalStocksHeld: totalStocks,
         time: investmentDate,
       });
-
       setUnits("");
     } catch (error) {
       const msg = error.response?.data?.message || "Transaction failed.";
       setResult({ message: msg });
     }
   };
-
 
   return (
     <Transition appear show={isOpen} as={Fragment}>
@@ -149,7 +131,6 @@ export default function FundCompanyActionModal({
         >
           <div className="fixed inset-0 bg-black/30 backdrop-blur-sm" />
         </Transition.Child>
-
         <div className="fixed inset-0 overflow-y-auto">
           <div className="flex min-h-full items-center justify-center p-4">
             <Transition.Child
@@ -163,50 +144,35 @@ export default function FundCompanyActionModal({
             >
               <Dialog.Panel className="w-full max-w-md transform overflow-hidden rounded-xl bg-white p-6 shadow-xl">
                 <Dialog.Title className="text-xl font-bold text-center text-teal-700">
-                  {actionType === "BUY"
-                    ? "Buy Company Shares"
-                    : "Sell Company Shares"}
+                  {actionType === "BUY" ? "Buy Company Shares" : "Sell Company Shares"}
                 </Dialog.Title>
-
                 <div className="mt-4 space-y-2 text-sm text-gray-700">
                   <p>
                     🏢 <strong>Company:</strong>{" "}
-                    {company?.name || selectedCompany?.name || "N/A"} (
+                    {company?.name || company?.companyName || selectedCompany?.name || "N/A"} (
                     {company?.symbol || selectedCompany?.symbol || "N/A"})
                   </p>
-
                   <p>
                     📈 <strong>Index:</strong>{" "}
                     {company?.indexName || selectedCompany?.indexName || "N/A"}
                   </p>
-
                   <p>
                     📊 <strong>Current NAV:</strong> ₹
                     {company?.nav ?? selectedCompany?.nav ?? "N/A"}
                   </p>
-
                   <p>
                     ⚠️ <strong>Risk Factor:</strong>{" "}
                     {company?.riskFactor ?? selectedCompany?.riskFactor ?? "N/A"}
                   </p>
-
                   <p>
                     💼 <strong>Total Capital:</strong> ₹
                     {company?.totalCapital ?? selectedCompany?.totalCapital ?? "N/A"}
                   </p>
-
-                  {/* {actionType === "BUY" && (
-                    <p>
-                      💰 <strong>Available Capital:</strong> ₹
-                      {availableCapital.toLocaleString()}
-                    </p>
-                  )} */}
-
                   {actionType === "SELL" && (
                     <>
-                      {/* <p>
+                      <p>
                         📦 <strong>Units Held:</strong> {unitsHeld}
-                      </p> */}
+                      </p>
                       <p>
                         💸 <strong>Expected Return:</strong> ₹
                         {expectedReturn}
@@ -214,7 +180,6 @@ export default function FundCompanyActionModal({
                     </>
                   )}
                 </div>
-
                 {!result ? (
                   <>
                     <div className="mt-4">
@@ -236,7 +201,6 @@ export default function FundCompanyActionModal({
                         </p>
                       )}
                     </div>
-
                     <div className="mt-6 flex justify-end space-x-3">
                       <button
                         className="px-4 py-2 rounded-md bg-gray-200 text-gray-800 hover:bg-gray-300"
@@ -287,9 +251,8 @@ export default function FundCompanyActionModal({
                         </p>
                       </>
                     )}
-
                     <p className="text-xs text-gray-600">
-                      🕒 {new Date(result.time).toLocaleString()}
+                      🕒 {result.time && new Date(result.time).toLocaleString()}
                     </p>
                     <div className="mt-3 flex justify-end">
                       <button
