@@ -51,12 +51,13 @@ const FundManagerDashboard = () => {
 
   const tabs = [
     "Overview",
+    "Invest",
     "Strategies",
     "Compare",
     // "Results",
     "Candle Data",
     "Backtest Your Script",
-    "Invest",
+    
   ];
 
   return (

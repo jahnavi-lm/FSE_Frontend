@@ -111,7 +111,7 @@ const AmcDashboard = () => {
     totalManagers: 0,
   });
 
-  const tabs = ["Mutual Funds", "Fund Managers", "Overview"];
+  const tabs = ["Mutual Funds", "Fund Managers"];
 
   const fetchSummaryCounts = async () => {
     try {
@@ -178,14 +178,14 @@ const AmcDashboard = () => {
         </div>
 
         {/* Tab Content */}
-        {selectedTab === "Overview" && (
+        {/* {selectedTab === "Overview" && (
           <div className="text-gray-700">
             <h2 className="text-lg font-semibold">Welcome to the AMC Admin Panel</h2>
             <p className="text-sm mt-2 text-gray-500">
               Manage all mutual funds and assign fund managers here.
             </p>
           </div>
-        )}
+        )} */}
 
         {selectedTab === "Mutual Funds" && (
           <AllMutualFunds onCreate={() => setShowCreatePopup(true)} />
