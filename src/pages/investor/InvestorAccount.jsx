@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
-import { FaEdit } from "react-icons/fa";
 import {
   MdBadge,
   MdSchool,
@@ -91,10 +90,6 @@ const MyAccount = () => {
               ? "AMC Profile"
               : "Investor Profile"}
           </h3>
-          <FaEdit
-            className="text-blue-600 hover:text-blue-800 cursor-pointer"
-            title="Edit Profile"
-          />
         </div>
 
         <div className="grid sm:grid-cols-2 gap-4 text-sm text-gray-700 mb-4">
